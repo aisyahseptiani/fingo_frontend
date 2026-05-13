@@ -11,6 +11,8 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer
 } from 'recharts'
+import fingoLogo from '../../assets/images/fingo-logo.png'
+
 
 export default function DashboardPage() {
   const { user } = useAuthContext()

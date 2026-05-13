@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { useAuthContext } from '../../context/AuthContext'
 import { useLogout } from '../../hooks/useAuth'
+import fingoLogo from '../../assets/images/fingo-logo.png'
 
 const MENU_UTAMA = [
   { path: '/',             label: 'Dashboard',      icon: LayoutDashboard },
@@ -37,7 +38,7 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="px-5 py-5 border-b border-gray-100">
         <div className="flex items-center gap-2.5">
-          <span className="text-2xl">🐸</span>
+          <img src={fingoLogo} alt="Fingo" className="w-10 h-10 rounded-xl object-cover" />
           <div>
             <div className="font-black text-lg leading-none">
               <span className="text-gray-900">Fin</span>

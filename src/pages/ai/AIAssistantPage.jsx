@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Send, Mic } from 'lucide-react'
+import fingoLogo from '../../assets/images/fingo-logo.png'
 
 const QUICK_PROMPTS = [
   'Ringkasan keuanganku',
@@ -70,9 +71,7 @@ export default function AIAssistantPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-10 h-10 rounded-full bg-[#22c55e] flex items-center justify-center text-white font-bold text-lg">
-                🐸
-              </div>
+              <img src={fingoLogo} alt="Fingo AI" className="w-10 h-10 rounded-full object-cover" />
               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 rounded-full border-2 border-white" />
             </div>
             <div>
@@ -114,9 +113,7 @@ export default function AIAssistantPage() {
 
             {/* AI avatar */}
             {msg.role === 'ai' && (
-              <div className="w-8 h-8 rounded-full bg-[#22c55e] flex items-center justify-center text-white text-sm shrink-0 mt-1">
-                🐸
-              </div>
+              <img src={fingoLogo} alt="AI" className="w-8 h-8 rounded-full object-cover shrink-0 mt-1" />
             )}
 
             <div className={`max-w-[75%] ${msg.role === 'user' ? 'items-end' : 'items-start'} flex flex-col`}>
@@ -139,9 +136,7 @@ export default function AIAssistantPage() {
         {/* Typing indicator */}
         {isTyping && (
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#22c55e] flex items-center justify-center text-white text-sm shrink-0">
-              🐸
-            </div>
+            <img src={fingoLogo} alt="AI" className="w-8 h-8 rounded-full object-cover shrink-0" />
             <div className="bg-white border border-gray-100 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm flex items-center gap-1">
               <span className="text-sm text-gray-400 mr-1">Fingo AI sedang mengetik</span>
               {[0, 1, 2].map(i => (
