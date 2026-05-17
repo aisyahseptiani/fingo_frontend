@@ -359,7 +359,7 @@ export default function BudgetPlannerPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="px-4 py-4 lg:px-6 lg:py-6 space-y-5">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -395,7 +395,7 @@ export default function BudgetPlannerPage() {
 
       {/* Loading skeleton */}
       {isLoading && (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {[1,2,3].map(i => (
             <div key={i} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden animate-pulse">
               <div className="px-5 pt-5 pb-4 bg-gray-50 border-b border-gray-100 space-y-2">

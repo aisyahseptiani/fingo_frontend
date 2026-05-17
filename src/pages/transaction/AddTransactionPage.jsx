@@ -28,7 +28,7 @@ export default function AddTransactionPage() {
   const formatRp = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n)
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="px-4 py-4 lg:px-6 lg:py-6 space-y-5">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>

@@ -38,7 +38,7 @@ export default function TransactionHistoryPage() {
   })
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="px-4 py-4 lg:px-6 lg:py-6 space-y-5">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -117,42 +117,44 @@ export default function TransactionHistoryPage() {
           <span className="text-sm text-gray-400">Menampilkan {filtered.length} dari {ALL_TRANSACTIONS.length} transaksi</span>
         </div>
 
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-gray-100 bg-gray-50/50">
-              <th className="text-left px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Keterangan</th>
-              <th className="text-left px-3 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Kategori</th>
-              <th className="text-left px-3 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Tanggal</th>
-              <th className="text-right px-3 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Jumlah</th>
-              <th className="text-right px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Aksi</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {filtered.map(trx => (
-              <tr key={trx.id} className="hover:bg-gray-50/60 transition-colors">
-                <td className="px-6 py-4">
-                  <p className="font-semibold text-gray-800">{trx.description}</p>
-                  <p className="text-xs text-gray-400">{trx.method}</p>
-                </td>
-                <td className="px-3 py-4">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${CATEGORY_COLORS[trx.category] ?? 'bg-gray-100 text-gray-600'}`}>
-                    {trx.category}
-                  </span>
-                </td>
-                <td className="px-3 py-4 text-gray-400 text-sm">{trx.date}</td>
-                <td className={`px-3 py-4 text-right font-bold ${trx.type === 'income' ? 'text-[#22c55e]' : 'text-red-500'}`}>
-                  {trx.type === 'income' ? '+' : '-'}{formatRp(trx.amount)}
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <button className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
-                    edit / hapus
-                  </button>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-100 bg-gray-50/50">
+                <th className="text-left px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Keterangan</th>
+                <th className="text-left px-3 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Kategori</th>
+                <th className="text-left px-3 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Tanggal</th>
+                <th className="text-right px-3 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Jumlah</th>
+                <th className="text-right px-6 py-3 text-xs font-bold text-gray-400 uppercase tracking-wider">Aksi</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {filtered.map(trx => (
+                <tr key={trx.id} className="hover:bg-gray-50/60 transition-colors">
+                  <td className="px-6 py-4">
+                    <p className="font-semibold text-gray-800">{trx.description}</p>
+                    <p className="text-xs text-gray-400">{trx.method}</p>
+                  </td>
+                  <td className="px-3 py-4">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${CATEGORY_COLORS[trx.category] ?? 'bg-gray-100 text-gray-600'}`}>
+                      {trx.category}
+                    </span>
+                  </td>
+                  <td className="px-3 py-4 text-gray-400 text-sm">{trx.date}</td>
+                  <td className={`px-3 py-4 text-right font-bold ${trx.type === 'income' ? 'text-[#22c55e]' : 'text-red-500'}`}>
+                    {trx.type === 'income' ? '+' : '-'}{formatRp(trx.amount)}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <button className="text-xs text-gray-400 hover:text-gray-600 transition-colors">
+                      edit / hapus
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        
         {/* Pagination */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-gray-100">
           <span className="text-sm text-gray-400">Halaman 1 dari 6 halaman</span>

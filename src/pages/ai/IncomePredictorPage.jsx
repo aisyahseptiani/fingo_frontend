@@ -111,7 +111,7 @@ export default function IncomePredictorPage() {
       </div>
 
       {/* 4 Stat cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Rata-rata minggu ini', value: 'Rp 980 rb',  sub: '12 minggu terakhir',         valueColor: 'text-[#22c55e]'  },
           { label: 'Prediksi  minggu ini', value: 'Rp 1.1 jt',  sub: '↑+12% dari rata-rata',       valueColor: 'text-yellow-500' },
