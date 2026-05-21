@@ -130,121 +130,588 @@ function MainSettings({ onNav }) {
 // ════════════════════════════════════════════════════════════════
 function AkunSettings({ onBack }) {
   const [form, setForm] = useState({
-    firstName: 'Aisyah', lastName: 'Septiani',
-    email: 'aisyah@example.com', phone: '1234567890',
-    city: 'Pekanbaru', province: 'Riau',
-    jobType: 'Gig Worker', platform: 'Gojek',
+    firstName: 'Aisyah',
+    lastName: 'Septiani',
+    email: 'aisyah@example.com',
+    phone: '1234567890',
+    city: 'Pekanbaru',
+    province: 'Riau',
+    jobType: 'Gig Worker',
+    platform: 'Gojek',
   })
-  const set = (key) => (e) => setForm(p => ({ ...p, [key]: e.target.value }))
+
+  const set = (key) => (e) =>
+    setForm((p) => ({
+      ...p,
+      [key]: e.target.value,
+    }))
 
   return (
-    <div className="p-6">
-      <BackHeader onBack={onBack} title="Akun" subtitle="Profil & Informasi" />
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
-        <div className="flex items-center justify-between border-b border-gray-100 pb-5">
-          <div>
-            <h2 className="font-bold text-gray-900 text-lg">Informasi Profil</h2>
-            <p className="text-sm text-gray-400">Nama, foto, dan informasi dasar akun</p>
+    <div className="p-4 sm:p-5 lg:p-6">
+      <BackHeader
+        onBack={onBack}
+        title="Akun"
+        subtitle="Profil & Informasi"
+      />
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 lg:p-6 space-y-6">
+
+        {/* HEADER */}
+        <div className="border-b border-gray-100 pb-5">
+          <h2 className="font-bold text-gray-900 text-lg">
+            Informasi Profil
+          </h2>
+
+          <p className="text-sm text-gray-400 mt-1">
+            Nama, foto, dan informasi dasar akun
+          </p>
+        </div>
+
+        {/* PROFILE */}
+        <div className="flex items-start gap-4 sm:gap-5">
+
+          {/* FOTO */}
+          <div className="shrink-0">
+            <div
+              className="
+                w-20 h-20
+                sm:w-24 sm:h-24
+
+                rounded-2xl
+                bg-[#1C3829]
+              "
+            />
           </div>
-          <button className="px-4 py-2 rounded-xl border border-[#22c55e] text-[#22c55e] text-sm font-semibold hover:bg-[#22c55e]/10 transition-colors">
+
+          {/* RIGHT SIDE */}
+          <div className="flex-1 min-w-0">
+
+            {/* EMAIL */}
+              <p
+                className="
+                  text-xs
+                  sm:text-base
+
+                  text-gray-500
+
+                  leading-relaxed
+                  break-words
+
+                  mb-3
+                "
+              >
+                aisyah@example.com · Bergabung April 2024
+              </p>
+
+            {/* BUTTONS */}
+            <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+
+              <button
+                className="
+                  h-8 sm:h-9
+
+                  px-3 sm:px-4
+
+                  rounded-xl
+
+                  bg-[#22c55e]
+                  hover:bg-[#16a34a]
+
+                  text-white
+                  text-[11px] sm:text-sm
+                  font-semibold
+
+                  whitespace-nowrap
+
+                  transition-colors
+                "
+              >
+                Ganti Foto
+              </button>
+
+              <button
+                className="
+                  h-8 sm:h-9
+
+                  px-3 sm:px-4
+
+                  rounded-xl
+
+                  border border-gray-200
+                  hover:bg-gray-50
+
+                  text-gray-600
+                  text-[11px] sm:text-sm
+                  font-semibold
+
+                  whitespace-nowrap
+
+                  transition-colors
+                "
+              >
+                Hapus Foto
+              </button>
+            </div>
+
+            {/* FORMAT */}
+              <p
+                className="
+                  text-[10px]
+                  sm:text-xs
+
+                  text-gray-400
+
+                  mt-3
+
+                  leading-relaxed
+                "
+              >
+                Format: JPG, PNG, WebP · Maks. 5MB · Minimal 200×200px
+              </p>
+          </div>
+        </div>
+            
+
+        {/* NAMA */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Field
+            label="Nama Depan"
+            value={form.firstName}
+            onChange={set('firstName')}
+          />
+
+          <Field
+            label="Nama Belakang"
+            value={form.lastName}
+            onChange={set('lastName')}
+          />
+        </div>
+
+        {/* EMAIL & PHONE */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <Field
+            label="Email"
+            value={form.email}
+            onChange={set('email')}
+            type="email"
+          />
+
+          <div>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
+              Nomor Telepon
+            </label>
+
+            <div className="flex gap-2">
+              <div
+                className="
+                  px-3 py-3
+                  rounded-xl
+                  border border-gray-200
+                  text-sm text-gray-500
+                  bg-gray-50
+                  shrink-0
+                "
+              >
+                ID +62
+              </div>
+
+              <input
+                value={form.phone}
+                onChange={set('phone')}
+                type="tel"
+                className="
+                  flex-1 min-w-0
+                  px-4 py-3
+                  rounded-xl
+                  border border-gray-200
+                  text-sm
+                  outline-none
+                  focus:border-[#22c55e]
+                  focus:ring-2
+                  focus:ring-[#22c55e]/10
+                "
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* KOTA & PROVINSI */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <div>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
+              Kota / Domisili
+            </label>
+
+            <select
+              value={form.city}
+              onChange={set('city')}
+              className="
+                w-full
+                px-4 py-3
+                rounded-xl
+                border border-gray-200
+                text-sm
+                outline-none
+                focus:border-[#22c55e]
+                focus:ring-2
+                focus:ring-[#22c55e]/10
+                bg-white
+              "
+            >
+              {[
+                'Pekanbaru',
+                'Jakarta',
+                'Bandung',
+                'Surabaya',
+                'Medan',
+              ].map((c) => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
+              Provinsi
+            </label>
+
+            <select
+              value={form.province}
+              onChange={set('province')}
+              className="
+                w-full
+                px-4 py-3
+                rounded-xl
+                border border-gray-200
+                text-sm
+                outline-none
+                focus:border-[#22c55e]
+                focus:ring-2
+                focus:ring-[#22c55e]/10
+                bg-white
+              "
+            >
+              {[
+                'Riau',
+                'DKI Jakarta',
+                'Jawa Barat',
+                'Jawa Timur',
+                'Sumatera Utara',
+              ].map((p) => (
+                <option key={p}>{p}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* JOB */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <div>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
+              Tipe Pekerjaan
+            </label>
+
+            <select
+              value={form.jobType}
+              onChange={set('jobType')}
+              className="
+                w-full
+                px-4 py-3
+                rounded-xl
+                border border-gray-200
+                text-sm
+                outline-none
+                focus:border-[#22c55e]
+                focus:ring-2
+                focus:ring-[#22c55e]/10
+                bg-white
+              "
+            >
+              {[
+                'Gig Worker',
+                'Freelancer',
+                'Karyawan',
+                'Wirausaha',
+              ].map((j) => (
+                <option key={j}>{j}</option>
+              ))}
+            </select>
+          </div>
+
+          <Field
+            label="Platform"
+            value={form.platform}
+            onChange={set('platform')}
+          />
+        </div>
+
+        {/* SAVE BUTTON */}
+        <div className="pt-2">
+          <button
+            className="
+              w-full
+              sm:w-auto
+              sm:min-w-[220px]
+
+              px-5 py-3.5
+
+              rounded-2xl
+
+              bg-[#22c55e]
+              hover:bg-[#16a34a]
+
+              text-white
+              text-sm
+              font-bold
+
+              shadow-sm
+              hover:shadow-md
+
+              transition-all
+              duration-200
+            "
+          >
             Simpan Perubahan
           </button>
-        </div>
-        <div className="flex items-start gap-5">
-          <div className="w-20 h-20 rounded-xl bg-[#1C3829] shrink-0" />
-          <div>
-            <p className="text-sm text-gray-500 mb-2">aisyah@example.com · Bergabung April 2024 · ID #FNG-00291</p>
-            <div className="flex gap-2">
-              <button className="px-3 py-1.5 rounded-lg border border-[#22c55e] text-[#22c55e] text-xs font-semibold hover:bg-[#22c55e]/10 transition-colors">Ganti Foto</button>
-              <button className="px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 text-xs font-semibold hover:bg-gray-50 transition-colors">Hapus Foto</button>
-            </div>
-            <p className="text-xs text-gray-400 mt-2">Format: JPG, PNG, WebP · Maks. 5MB · Minimal 200×200px</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Nama Depan" value={form.firstName} onChange={set('firstName')} />
-          <Field label="Nama Belakang" value={form.lastName} onChange={set('lastName')} />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Email" value={form.email} onChange={set('email')} type="email" />
-          <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Nomor Telepon</label>
-            <div className="flex gap-2">
-              <div className="px-3 py-3 rounded-xl border border-gray-200 text-sm text-gray-500 bg-gray-50 shrink-0">ID +62</div>
-              <input value={form.phone} onChange={set('phone')} type="tel"
-                className="flex-1 px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#22c55e] focus:ring-2 focus:ring-[#22c55e]/10" />
-            </div>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Kota / Domisili</label>
-            <select value={form.city} onChange={set('city')} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#22c55e] bg-white">
-              {['Pekanbaru','Jakarta','Bandung','Surabaya','Medan'].map(c => <option key={c}>{c}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Provinsi</label>
-            <select value={form.province} onChange={set('province')} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#22c55e] bg-white">
-              {['Riau','DKI Jakarta','Jawa Barat','Jawa Timur','Sumatera Utara'].map(p => <option key={p}>{p}</option>)}
-            </select>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Tipe Pekerjaan</label>
-            <select value={form.jobType} onChange={set('jobType')} className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#22c55e] bg-white">
-              {['Gig Worker','Freelancer','Karyawan','Wirausaha'].map(j => <option key={j}>{j}</option>)}
-            </select>
-          </div>
-          <Field label="Platform" value={form.platform} onChange={set('platform')} />
         </div>
       </div>
     </div>
   )
 }
-
 // ════════════════════════════════════════════════════════════════
 // NOTIFIKASI
 // ════════════════════════════════════════════════════════════════
 function NotifikasiSettings({ onBack }) {
   const [notifs, setNotifs] = useState({
-    all: true, impulsif: true, budget: true,
-    impulsif2: true, target: true, ai: true,
-    keamanan: true, promo: true,
+    all: true,
+    impulsif: true,
+    budget: true,
+    impulsif2: true,
+    target: true,
+    ai: true,
+    keamanan: true,
+    promo: true,
   })
-  const toggle = (key) => setNotifs(p => ({ ...p, [key]: !p[key] }))
+
+  const toggle = (key) =>
+    setNotifs((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }))
 
   const ITEMS = [
-    { key: 'all',       label: 'Aktifkan semua notifikasi',      icon: Bell,       iconBg: 'bg-blue-100',   iconColor: 'text-blue-500' },
-    { key: 'impulsif',  label: 'Peringatan Transaksi Implusif',  desc: 'Notifikasi real-time saat AI mendeteksi pengeluaran impulsif',
-      icon: Shield, iconBg: 'bg-red-100', iconColor: 'text-red-500' },
-    { key: 'budget',    label: 'Peringatan Budget Hampir Habis', desc: 'Notifikasi saat pengeluaran suatu kategori mendekati atau melewati limit',
-      icon: Wallet, iconBg: 'bg-yellow-100', iconColor: 'text-yellow-600',
-      extra: <select className="mr-2 px-2 py-1 border border-gray-200 rounded-lg text-xs text-gray-500 bg-white"><option>80%</option><option>70%</option><option>90%</option></select> },
-    { key: 'impulsif2', label: 'Peringatan Transaksi Implusif',  desc: 'Notifikasi real-time saat AI mendeteksi pengeluaran impulsif',
-      icon: Shield, iconBg: 'bg-red-100', iconColor: 'text-red-500' },
-    { key: 'target',    label: 'Update Progress Target',         desc: 'Notifikasi saat target keuangan mencapai milestone tertentu',
-      icon: BarChart2, iconBg: 'bg-green-100', iconColor: 'text-green-600' },
-    { key: 'ai',        label: 'Tips AI Proaktif',               desc: 'Saran keuangan dari Fingo AI berdasarkan pola transaksi kamu',
-      icon: Sliders, iconBg: 'bg-purple-100', iconColor: 'text-purple-600' },
-    { key: 'keamanan',  label: 'Aktivitas Keamanan',             desc: 'Login baru, perubahan password, atau akses mencurigakan',
-      icon: Lock, iconBg: 'bg-orange-100', iconColor: 'text-orange-600' },
-    { key: 'promo',     label: 'Email Promosi & Tips',           desc: 'Artikel keuangan, tips hemat, dan info fitur baru Fingo',
-      icon: FileText, iconBg: 'bg-gray-100', iconColor: 'text-gray-500' },
+    {
+      key: 'all',
+      label: 'Aktifkan semua notifikasi',
+      icon: Bell,
+      iconBg: 'bg-blue-100',
+      iconColor: 'text-blue-500',
+    },
+    {
+      key: 'impulsif',
+      label: 'Peringatan Transaksi Implusif',
+      desc: 'Notifikasi real-time saat AI mendeteksi pengeluaran impulsif',
+      icon: Shield,
+      iconBg: 'bg-red-100',
+      iconColor: 'text-red-500',
+    },
+    {
+      key: 'budget',
+      label: 'Peringatan Budget Hampir Habis',
+      desc: 'Notifikasi saat pengeluaran suatu kategori mendekati atau melewati limit',
+      icon: Wallet,
+      iconBg: 'bg-yellow-100',
+      iconColor: 'text-yellow-600',
+      extra: (
+        <select className="hidden sm:block mr-2 px-2 py-1 border border-gray-200 rounded-lg text-xs text-gray-500 bg-white">
+          <option>80%</option>
+          <option>70%</option>
+          <option>90%</option>
+        </select>
+      ),
+    },
+    {
+      key: 'impulsif2',
+      label: 'Peringatan Transaksi Implusif',
+      desc: 'Notifikasi real-time saat AI mendeteksi pengeluaran impulsif',
+      icon: Shield,
+      iconBg: 'bg-red-100',
+      iconColor: 'text-red-500',
+    },
+    {
+      key: 'target',
+      label: 'Update Progress Target',
+      desc: 'Notifikasi saat target keuangan mencapai milestone tertentu',
+      icon: BarChart2,
+      iconBg: 'bg-green-100',
+      iconColor: 'text-green-600',
+    },
+    {
+      key: 'ai',
+      label: 'Tips AI Proaktif',
+      desc: 'Saran keuangan dari Fingo AI berdasarkan pola transaksi kamu',
+      icon: Sliders,
+      iconBg: 'bg-purple-100',
+      iconColor: 'text-purple-600',
+    },
+    {
+      key: 'keamanan',
+      label: 'Aktivitas Keamanan',
+      desc: 'Login baru, perubahan password, atau akses mencurigakan',
+      icon: Lock,
+      iconBg: 'bg-orange-100',
+      iconColor: 'text-orange-600',
+    },
+    {
+      key: 'promo',
+      label: 'Email Promosi & Tips',
+      desc: 'Artikel keuangan, tips hemat, dan info fitur baru Fingo',
+      icon: FileText,
+      iconBg: 'bg-gray-100',
+      iconColor: 'text-gray-500',
+    },
   ]
 
   return (
-    <div className="p-6">
-      <BackHeader onBack={onBack} title="Notifikasi" subtitle="Pemberitahuan & Laporan" />
+    <div className="p-4 sm:p-5 lg:p-6">
+      <BackHeader
+        onBack={onBack}
+        title="Notifikasi"
+        subtitle="Pemberitahuan & Laporan"
+      />
+
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100">
-          <h2 className="font-bold text-gray-900">Atur Notifikasi Aplikasi</h2>
-        </div>
-        {ITEMS.map(item => (
-          <NotifRow key={item.key} icon={item.icon} iconBg={item.iconBg} iconColor={item.iconColor}
-            label={item.label} desc={item.desc} checked={notifs[item.key]}
-            onChange={() => toggle(item.key)} extra={item.extra} />
+        {/* LIST */}
+        {ITEMS.map((item) => (
+          <div
+            key={item.key}
+            className="
+              flex items-center justify-between
+              gap-3
+
+              px-4 sm:px-5
+              py-4
+
+              border-b border-gray-100
+              last:border-b-0
+            "
+          >
+
+            {/* LEFT */}
+            <div
+              className={`
+                flex gap-3 min-w-0 flex-1
+
+                items-center
+
+                ${item.desc ? 'sm:items-start' : 'sm:items-center'}
+              `}
+            >
+
+              {/* ICON */}
+              <div
+                className={`
+                  w-10 h-10
+                  rounded-xl
+                  flex items-center justify-center
+                  shrink-0
+                  ${item.iconBg}
+                `}
+              >
+                <item.icon
+                  size={18}
+                  className={item.iconColor}
+                />
+              </div>
+
+              {/* TEXT */}
+              <div
+                className={`
+                  min-w-0 flex-1
+
+                  flex items-center
+                  sm:block
+
+                  ${!item.desc ? 'sm:flex sm:items-center sm:h-10' : ''}
+                `}
+              >
+
+                <div>
+                  <div
+                    className="
+                      text-sm
+                      sm:text-[15px]
+
+                      font-semibold
+                      text-gray-900
+
+                      leading-snug
+                    "
+                  >
+                    {item.label}
+                  </div>
+
+                  {/* DESC hanya desktop */}
+                  {item.desc && (
+                    <p
+                      className="
+                        hidden sm:block
+
+                        text-sm
+                        text-gray-400
+
+                        mt-1
+                        leading-relaxed
+                      "
+                    >
+                      {item.desc}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* RIGHT */}
+            <div className="flex items-center shrink-0">
+
+              {item.extra}
+
+              <button
+                onClick={() => toggle(item.key)}
+                className={`
+                  relative
+                  w-11 h-6
+                  rounded-full
+                  transition-colors
+
+                  ${
+                    notifs[item.key]
+                      ? 'bg-[#22c55e]'
+                      : 'bg-gray-300'
+                  }
+                `}
+              >
+                <div
+                  className={`
+                    absolute top-0.5
+                    w-5 h-5
+                    rounded-full
+                    bg-white
+                    transition-all
+
+                    ${
+                      notifs[item.key]
+                        ? 'translate-x-5'
+                        : 'translate-x-0.5'
+                    }
+                  `}
+                />
+              </button>
+            </div>
+          </div>
         ))}
       </div>
     </div>
@@ -342,42 +809,242 @@ function TwoFAPage({ onBack }) {
 
 function SesiAktifPage({ onBack }) {
   const [sessions, setSessions] = useState([
-    { id: 1, device: 'Chrome di Windows 11',   info: 'ID Bandung, Indonesia · IP 112.215.xxx.xxx · Sekarang aktif', current: true },
-    { id: 2, device: 'Fingo Mobile — Android', info: 'ID Bandung, Indonesia · IP 112.215.xxx.xxx · Sekarang aktif', current: false },
+    {
+      id: 1,
+      device: 'Chrome di Windows 11',
+      info: 'ID Bandung, Indonesia · IP 112.215.xxx.xxx · Sekarang aktif',
+      current: true,
+    },
+    {
+      id: 2,
+      device: 'Fingo Mobile — Android',
+      info: 'ID Bandung, Indonesia · IP 112.215.xxx.xxx · Sekarang aktif',
+      current: false,
+    },
   ])
+
   return (
-    <div className="p-6">
-      <BackHeader onBack={onBack} title="Keamanan" subtitle="Kata Sandi & Sesi" />
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-5">
-          <div>
-            <h2 className="font-bold text-gray-900">Sesi Aktif</h2>
-            <p className="text-sm text-gray-400">Perangkat yang sedang login ke akun Fingo kamu</p>
+    <div className="p-4 sm:p-5 lg:p-6">
+      <BackHeader
+        onBack={onBack}
+        title="Keamanan"
+        subtitle="Kata Sandi & Sesi"
+      />
+
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 lg:p-6">
+
+        {/* HEADER */}
+        <div
+          className="
+            flex flex-col
+            sm:flex-row sm:items-center sm:justify-between
+
+            gap-4
+
+            border-b border-gray-100
+            pb-4 mb-5
+          "
+        >
+          <div className="min-w-0">
+            <h2 className="font-bold text-gray-900 text-base sm:text-lg">
+              Sesi Aktif
+            </h2>
+
+            <p className="text-xs sm:text-sm text-gray-400 mt-1 leading-relaxed">
+              Perangkat yang sedang login ke akun Fingo kamu
+            </p>
           </div>
-          <button className="px-4 py-2 rounded-xl bg-red-50 border border-red-200 text-red-500 text-sm font-semibold hover:bg-red-100 transition-colors">
+
+          {/* DESKTOP TETAP */}
+          <button
+            className="
+              w-full sm:w-auto
+
+              px-4 py-2
+
+              rounded-xl
+
+              bg-red-50
+              border border-red-200
+
+              text-red-500
+              text-sm
+              font-semibold
+
+              hover:bg-red-100
+              transition-colors
+            "
+          >
             Keluarkan Semua
           </button>
         </div>
+
+        {/* LIST */}
         <div className="space-y-3">
-          {sessions.map(s => (
-            <div key={s.id} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100">
-              <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
-                <Smartphone size={18} className="text-gray-500" />
+
+          {sessions.map((s) => (
+            <div
+              key={s.id}
+              className="
+                flex items-start sm:items-center
+                gap-3 sm:gap-4
+
+                p-4
+
+                rounded-xl
+                border border-gray-100
+              "
+            >
+
+              {/* ICON */}
+              <div
+                className="
+                  w-10 h-10
+
+                  rounded-xl
+                  bg-gray-100
+
+                  flex items-center justify-center
+
+                  shrink-0
+                "
+              >
+                <Smartphone
+                  size={18}
+                  className="text-gray-500"
+                />
               </div>
+
+              {/* CONTENT */}
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 text-sm">{s.device}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{s.info}</p>
+
+                <p
+                  className="
+                    font-semibold
+                    text-gray-900
+
+                    text-sm
+                    sm:text-sm
+
+                    leading-snug
+                  "
+                >
+                  {s.device}
+                </p>
+
+                <p
+                  className="
+                    text-[11px]
+                    sm:text-xs
+
+                    text-gray-400
+
+                    mt-1
+
+                    leading-relaxed
+                    break-words
+                  "
+                >
+                  {s.info}
+                </p>
+
+                {/* MOBILE BUTTON */}
+                <div className="mt-3 sm:hidden">
+
+                  {s.current ? (
+                    <span
+                      className="
+                        inline-flex items-center
+
+                        px-3 py-1.5
+
+                        rounded-xl
+
+                        bg-[#22c55e]/10
+                        border border-[#22c55e]
+
+                        text-[#22c55e]
+                        text-[11px]
+                        font-semibold
+                      "
+                    >
+                      Perangkat Ini
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() =>
+                        setSessions((p) =>
+                          p.filter((x) => x.id !== s.id)
+                        )
+                      }
+                      className="
+                        px-3 py-1.5
+
+                        rounded-xl
+
+                        bg-red-50
+                        border border-red-200
+
+                        text-red-500
+                        text-[11px]
+                        font-semibold
+
+                        hover:bg-red-100
+                        transition-colors
+                      "
+                    >
+                      Keluarkan
+                    </button>
+                  )}
+                </div>
               </div>
-              {s.current ? (
-                <span className="px-3 py-1.5 rounded-xl bg-[#22c55e]/10 border border-[#22c55e] text-[#22c55e] text-xs font-semibold shrink-0">
-                  Perangkat Ini
-                </span>
-              ) : (
-                <button onClick={() => setSessions(p => p.filter(x => x.id !== s.id))}
-                  className="px-3 py-1.5 rounded-xl bg-red-50 border border-red-200 text-red-500 text-xs font-semibold hover:bg-red-100 transition-colors shrink-0">
-                  Keluarkan
-                </button>
-              )}
+
+              {/* DESKTOP BUTTON */}
+              <div className="hidden sm:block shrink-0">
+                {s.current ? (
+                  <span
+                    className="
+                      px-3 py-1.5
+
+                      rounded-xl
+
+                      bg-[#22c55e]/10
+                      border border-[#22c55e]
+
+                      text-[#22c55e]
+                      text-xs
+                      font-semibold
+                    "
+                  >
+                    Perangkat Ini
+                  </span>
+                ) : (
+                  <button
+                    onClick={() =>
+                      setSessions((p) =>
+                        p.filter((x) => x.id !== s.id)
+                      )
+                    }
+                    className="
+                      px-3 py-1.5
+
+                      rounded-xl
+
+                      bg-red-50
+                      border border-red-200
+
+                      text-red-500
+                      text-xs
+                      font-semibold
+
+                      hover:bg-red-100
+                      transition-colors
+                    "
+                  >
+                    Keluarkan
+                  </button>
+                )}
+              </div>
             </div>
           ))}
         </div>
@@ -396,7 +1063,7 @@ function RiwayatAktivitasPage({ onBack }) {
   ]
   return (
     <div className="p-6">
-      <BackHeader onBack={onBack} title="Keamanan" subtitle="Kata Sandi & Sesi" />
+      {/* <BackHeader onBack={onBack} title="Keamanan" subtitle="Kata Sandi & Sesi" /> */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
         <div className="border-b border-gray-100 pb-4 mb-5">
           <h2 className="font-bold text-gray-900">Riwayat Aktivitas Keamanan</h2>
@@ -424,52 +1091,197 @@ function RiwayatAktivitasPage({ onBack }) {
 function KeamananSettings({ onBack }) {
   const [subPage, setSubPage] = useState(null)
 
-  if (subPage === 'password')  return <PasswordPage onBack={() => setSubPage(null)} />
-  if (subPage === 'twofa')     return <TwoFAPage onBack={() => setSubPage(null)} />
-  if (subPage === 'sesi')      return <SesiAktifPage onBack={() => setSubPage(null)} />
-  if (subPage === 'riwayat')   return <RiwayatAktivitasPage onBack={() => setSubPage(null)} />
+  if (subPage === 'password')
+    return <PasswordPage onBack={() => setSubPage(null)} />
+
+  if (subPage === 'twofa')
+    return <TwoFAPage onBack={() => setSubPage(null)} />
+
+  if (subPage === 'sesi')
+    return <SesiAktifPage onBack={() => setSubPage(null)} />
+
+  if (subPage === 'riwayat')
+    return <RiwayatAktivitasPage onBack={() => setSubPage(null)} />
 
   const ITEMS = [
-    { key: 'password', label: 'Perbarui Kata Sandi',          icon: Lock,       iconBg: 'bg-blue-100',   iconColor: 'text-blue-600' },
-    { key: 'twofa',    label: 'Autentikasi 2F',               icon: Shield,     iconBg: 'bg-green-100',  iconColor: 'text-green-600' },
-    { key: 'sesi',     label: 'Sesi Aktif',                   icon: Smartphone, iconBg: 'bg-purple-100', iconColor: 'text-purple-600' },
-    { key: 'riwayat',  label: 'Riwayat Aktivitas Keamanan',   icon: Clock,      iconBg: 'bg-orange-100', iconColor: 'text-orange-600' },
+    {
+      key: 'password',
+      label: 'Perbarui Kata Sandi',
+      icon: Lock,
+      iconBg: 'bg-blue-100',
+      iconColor: 'text-blue-600',
+    },
+    {
+      key: 'twofa',
+      label: 'Autentikasi 2F',
+      icon: Shield,
+      iconBg: 'bg-green-100',
+      iconColor: 'text-green-600',
+    },
+    {
+      key: 'sesi',
+      label: 'Sesi Aktif',
+      icon: Smartphone,
+      iconBg: 'bg-purple-100',
+      iconColor: 'text-purple-600',
+    },
+    {
+      key: 'riwayat',
+      label: 'Riwayat Aktivitas Keamanan',
+      icon: Clock,
+      iconBg: 'bg-orange-100',
+      iconColor: 'text-orange-600',
+    },
   ]
 
   return (
-    <div className="p-6">
-      <BackHeader onBack={onBack} title="Keamanan" subtitle="Kata Sandi & Sesi" />
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 mb-4">
-        <h2 className="font-bold text-gray-900 mb-1">Skor Keamanan Akun</h2>
-        <p className="text-sm text-gray-400 mb-4">Berdasarkan fitur keamanan yang sudah diaktifkan</p>
-        <div className="flex items-center gap-5">
-          <div className="relative shrink-0" style={{ width: 80, height: 80 }}>
-            <svg viewBox="0 0 36 36" className="w-20 h-20 -rotate-90">
-              <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f0f0f0" strokeWidth="3.5" />
-              <circle cx="18" cy="18" r="15.9" fill="none" stroke="#22c55e" strokeWidth="3.5"
-                strokeDasharray="80 100" strokeLinecap="round" />
+    <div className="p-4 sm:p-5 lg:p-6">
+      <BackHeader
+        onBack={onBack}
+        title="Keamanan"
+        subtitle="Kata Sandi & Sesi"
+      />
+
+      {/* SECURITY SCORE */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 lg:p-6 mb-4">
+
+        {/* TITLE */}
+        <h2 className="font-bold text-gray-900 text-base sm:text-lg mb-1">
+          Skor Keamanan Akun
+        </h2>
+
+        <p className="text-xs sm:text-sm text-gray-400 mb-5">
+          Berdasarkan fitur keamanan yang sudah diaktifkan
+        </p>
+
+        {/* CONTENT */}
+        <div className="flex items-center gap-4 sm:gap-5">
+
+          {/* SCORE */}
+          <div className="relative shrink-0">
+
+            <svg
+              viewBox="0 0 36 36"
+              className="
+                w-[72px] h-[72px]
+                sm:w-20 sm:h-20
+
+                -rotate-90
+              "
+            >
+              <circle
+                cx="18"
+                cy="18"
+                r="15.9"
+                fill="none"
+                stroke="#f0f0f0"
+                strokeWidth="3.5"
+              />
+
+              <circle
+                cx="18"
+                cy="18"
+                r="15.9"
+                fill="none"
+                stroke="#22c55e"
+                strokeWidth="3.5"
+                strokeDasharray="80 100"
+                strokeLinecap="round"
+              />
             </svg>
+
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-xl font-black text-gray-900">80</span>
-              <span className="text-[10px] text-gray-400">Skor</span>
+              <span className="text-lg sm:text-xl font-black text-gray-900">
+                80
+              </span>
+
+              <span className="text-[9px] sm:text-[10px] text-gray-400">
+                Skor
+              </span>
             </div>
           </div>
-          <div>
-            <p className="font-bold text-gray-900">Keamanan Baik — bisa lebih kuat lagi</p>
-            <p className="text-sm text-gray-500 mt-1">Akun kamu sudah cukup aman, tapi biometrik belum aktif.</p>
-            <p className="text-sm mt-2 flex flex-wrap gap-x-3">
-              <span className="text-[#22c55e]">✓ Password kuat</span>
-              <span className="text-[#22c55e]">✓ 2FA aktif</span>
-              <span className="text-[#22c55e]">✓ Email terverifikasi</span>
-              <span className="text-yellow-500">⚠ Biometrik belum aktif</span>
+
+          {/* INFO */}
+          <div className="min-w-0 flex-1">
+
+            {/* TITLE */}
+            <p
+              className="
+                font-bold
+                text-gray-900
+
+                text-sm
+                sm:text-base
+
+                leading-snug
+              "
+            >
+              Keamanan Baik —
+              <span className="block sm:inline sm:ml-1">
+                bisa lebih kuat lagi
+              </span>
             </p>
+
+            {/* DESC */}
+            <p
+              className="
+                text-xs
+                sm:text-sm
+
+                text-gray-500
+
+                mt-2
+                leading-relaxed
+              "
+            >
+              Akun kamu sudah cukup aman, tapi biometrik belum aktif.
+            </p>
+
+            {/* STATUS */}
+            <div
+              className="
+                mt-3
+
+                space-y-1
+                sm:space-y-0
+
+                sm:flex
+                sm:flex-wrap
+                sm:gap-x-3
+                sm:gap-y-1
+              "
+            >
+              <div className="text-[#22c55e] text-xs sm:text-sm">
+                ✓ Password kuat
+              </div>
+
+              <div className="text-[#22c55e] text-xs sm:text-sm">
+                ✓ 2FA aktif
+              </div>
+
+              <div className="text-[#22c55e] text-xs sm:text-sm">
+                ✓ Email terverifikasi
+              </div>
+
+              <div className="text-yellow-500 text-xs sm:text-sm">
+                ⚠ Biometrik belum aktif
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* MENU */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        {ITEMS.map(item => (
-          <SettingRow key={item.key} icon={item.icon} iconBg={item.iconBg} iconColor={item.iconColor}
-            label={item.label} onClick={() => setSubPage(item.key)} />
+        {ITEMS.map((item) => (
+          <SettingRow
+            key={item.key}
+            icon={item.icon}
+            iconBg={item.iconBg}
+            iconColor={item.iconColor}
+            label={item.label}
+            onClick={() => setSubPage(item.key)}
+          />
         ))}
       </div>
     </div>

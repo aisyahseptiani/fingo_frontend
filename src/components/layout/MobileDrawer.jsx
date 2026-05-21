@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { useAuthContext } from '../../context/AuthContext'
 import { useLogout } from '../../hooks/useAuth'
+import fingoLogo from '../../assets/images/fingo-logo.png'
 
 const MENU_UTAMA = [
   { path: '/',                 label: 'Dashboard',       icon: LayoutDashboard },
@@ -27,59 +28,86 @@ export default function MobileDrawer({ isOpen, onClose }) {
 
   const linkClass = ({ isActive }) =>
     `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
-    ${isActive ? 'bg-[#22c55e]/15 text-[#22c55e] font-semibold' : 'text-gray-600 hover:bg-gray-100'}`
+    ${isActive
+      ? 'bg-[#22c55e]/15 text-[#22c55e] font-semibold'
+      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+    }`
 
   return (
     <>
       {/* Backdrop */}
       <div
-        className={`fixed inset-0 bg-black/40 z-50 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={onClose}
+        className={`fixed inset-0 bg-black/40 z-50 transition-opacity duration-300
+          ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
       />
 
-      {/* Drawer panel */}
-      <div className={`fixed top-0 left-0 h-full w-72 bg-white z-50 flex flex-col shadow-2xl
-        transform transition-transform duration-300 ease-in-out
-        ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-
-        {/* Header */}
+      {/* Drawer dari kanan */}
+      <div
+        className={`fixed top-0 right-0 h-full w-72 bg-white z-50 flex flex-col shadow-2xl
+          transform transition-transform duration-300 ease-in-out
+          ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+      >
+        {/* Header drawer */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-[#1C3829] flex items-center justify-center text-xl">
-              🐸
-            </div>
+          <div className="flex items-center gap-3">
+            <img
+              src={fingoLogo}
+              alt="Fingo"
+              className="w-9 h-9 rounded-xl object-cover"
+            />
             <div>
               <div className="font-black text-lg leading-none">
                 <span className="text-gray-900">Fin</span>
                 <span className="text-[#22c55e]">go</span>
               </div>
-              <div className="text-[10px] text-gray-400 tracking-widest uppercase">Smart Finance App</div>
+              <div className="text-[10px] text-gray-400 tracking-widest uppercase mt-0.5">
+                Smart Finance App
+              </div>
             </div>
           </div>
-          <button onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors">
+          <button
+            onClick={onClose}
+            className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors"
+          >
             <X size={17} className="text-gray-500" />
           </button>
         </div>
 
-        {/* Nav links */}
+        {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-5 overflow-y-auto">
           <div>
-            <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase px-3 mb-2">Menu Utama</p>
+            <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase px-3 mb-2">
+              Menu Utama
+            </p>
             <div className="space-y-0.5">
               {MENU_UTAMA.map(({ path, label, icon: Icon }) => (
-                <NavLink key={path} to={path} end={path === '/'} className={linkClass} onClick={onClose}>
+                <NavLink
+                  key={path}
+                  to={path}
+                  end={path === '/'}
+                  className={linkClass}
+                  onClick={onClose}
+                >
                   <Icon size={17} />
                   {label}
                 </NavLink>
               ))}
             </div>
           </div>
+
           <div>
-            <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase px-3 mb-2">Analitik</p>
+            <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase px-3 mb-2">
+              Analitik
+            </p>
             <div className="space-y-0.5">
               {ANALITIK.map(({ path, label, icon: Icon }) => (
-                <NavLink key={path} to={path} className={linkClass} onClick={onClose}>
+                <NavLink
+                  key={path}
+                  to={path}
+                  className={linkClass}
+                  onClick={onClose}
+                >
                   <Icon size={17} />
                   {label}
                 </NavLink>
@@ -95,12 +123,17 @@ export default function MobileDrawer({ isOpen, onClose }) {
               {user?.name?.charAt(0).toUpperCase() ?? 'A'}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-gray-900 truncate">{user?.name ?? 'Pengguna'}</p>
-              <p className="text-xs text-gray-400 truncate">{user?.jobType ?? 'Gig Worker'}</p>
+              <p className="text-sm font-semibold text-gray-900 truncate">
+                {user?.name ?? 'Pengguna'}
+              </p>
+              <p className="text-xs text-gray-400 truncate">
+                {user?.jobType ?? 'Gig Worker'}
+              </p>
             </div>
             <button
               onClick={() => { logout(); onClose() }}
-              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+            >
               <LogOut size={15} />
             </button>
           </div>
