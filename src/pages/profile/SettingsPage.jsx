@@ -110,7 +110,7 @@ function MainSettings({ onNav }) {
   ]
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-black text-gray-900">Pengaturan</h1>
+      <h1 className="text-2xl font-black text-gray-700">Pengaturan</h1>
       <p className="text-gray-400 text-sm mt-0.5 mb-6">Kelola preferensi & keamanan akumnu</p>
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b border-gray-100">
@@ -722,28 +722,92 @@ function NotifikasiSettings({ onBack }) {
 // KEAMANAN — sub-halaman
 // ════════════════════════════════════════════════════════════════
 function PasswordPage({ onBack }) {
-  const [form, setForm] = useState({ current: '', newPw: '', confirm: '' })
+  const [form, setForm] = useState({
+    current: '',
+    newPw: '',
+    confirm: '',
+  })
+
   return (
     <div className="p-6">
-      <BackHeader onBack={onBack} title="Keamanan" subtitle="Kata Sandi & Sesi" />
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
-        <div className="border-b border-gray-100 pb-4">
-          <h2 className="font-bold text-gray-900">Perbarui Kata Sandi</h2>
-          <p className="text-sm text-gray-400">Terakhir diubah 3 bulan lalu — disarankan ganti setiap 90 hari</p>
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 space-y-5">
+
+        {/* Header */}
+        <div className="flex items-start gap-3 border-b border-gray-100 pb-4">
+          <button
+            onClick={onBack}
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50 hover:bg-gray-100 transition text-lg"
+          >
+            ←
+          </button>
+
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">
+              Perbarui Kata Sandi
+            </h2>
+
+            <p className="text-xs text-gray-400 mt-1">
+              Terakhir diubah 3 bulan lalu — disarankan ganti setiap 90 hari
+            </p>
+          </div>
         </div>
-        <Field label="Kata Sandi Saat Ini" value={form.current}
-          onChange={e => setForm(p => ({ ...p, current: e.target.value }))} type="password" placeholder="••••••••" />
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Kata Sandi Baru" value={form.newPw}
-            onChange={e => setForm(p => ({ ...p, newPw: e.target.value }))} type="password" placeholder="Minimal 8 karakter" />
-          <Field label="Konfirmasi Kata Sandi Baru" value={form.confirm}
-            onChange={e => setForm(p => ({ ...p, confirm: e.target.value }))} type="password" placeholder="Ulangi kata sandi baru" />
+
+        {/* Password Saat Ini */}
+        <Field
+          label="KATA SANDI SAAT INI"
+          value={form.current}
+          onChange={(e) =>
+            setForm((prev) => ({
+              ...prev,
+              current: e.target.value,
+            }))
+          }
+          type="password"
+          placeholder="••••••••"
+        />
+
+        {/* Password Baru */}
+        <Field
+          label="KATA SANDI BARU"
+          value={form.newPw}
+          onChange={(e) =>
+            setForm((prev) => ({
+              ...prev,
+              newPw: e.target.value,
+            }))
+          }
+          type="password"
+          placeholder="Minimal 8 karakter"
+        />
+
+        {/* Konfirmasi */}
+        <Field
+          label="KONFIRMASI KATA SANDI"
+          value={form.confirm}
+          onChange={(e) =>
+            setForm((prev) => ({
+              ...prev,
+              confirm: e.target.value,
+            }))
+          }
+          type="password"
+          placeholder="Ulangi kata sandi baru"
+        />
+
+        {/* Tips */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-2xl px-4 py-3">
+          <p className="text-xs leading-6 text-yellow-700">
+            Tips: Gunakan minimal 12 karakter, campurkan huruf besar,
+            angka, dan simbol. Jangan gunakan kata sandi yang sama di
+            aplikasi lain.
+          </p>
         </div>
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3">
-          <p className="text-sm text-yellow-700">Tips: Gunakan minimal 12 karakter, campurkan huruf besar, angka, dan simbol. Jangan gunakan kata sandi yang sama di aplikasi lain.</p>
-        </div>
-        <div className="flex justify-end">
-          <button className="px-6 py-3 bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold rounded-xl transition-colors">Perbarui</button>
+
+        {/* Tombol */}
+        <div className="flex justify-end pt-1">
+          <button className="px-7 py-3 bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-bold rounded-2xl transition-colors">
+            Perbarui
+          </button>
         </div>
       </div>
     </div>
@@ -753,55 +817,133 @@ function PasswordPage({ onBack }) {
 function TwoFAPage({ onBack }) {
   const [method, setMethod] = useState('sms')
   const [enabled, setEnabled] = useState(true)
+
   return (
     <div className="p-6">
-      <BackHeader onBack={onBack} title="Keamanan" subtitle="Kata Sandi & Sesi" />
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
-        <div className="border-b border-gray-100 pb-4">
-          <h2 className="font-bold text-gray-900">Atur Autentikasi 2 Faktur</h2>
-          <p className="text-sm text-gray-400">Tambah lapisan keamanan ekstra saat login</p>
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5 space-y-5">
+
+        {/* Header */}
+        <div className="flex items-start gap-3 border-b border-gray-100 pb-4">
+          <button
+            onClick={onBack}
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50 hover:bg-gray-100 transition text-lg shrink-0"
+          >
+            ←
+          </button>
+
+          <div className="flex-1">
+            <h2 className="text-xl font-bold text-gray-900">
+              Autentikasi 2 Faktor
+            </h2>
+
+            <p className="text-xs text-gray-400 mt-1 leading-5">
+              Tambah lapisan keamanan ekstra saat login
+            </p>
+          </div>
         </div>
 
         {/* Status */}
-        <div className="flex items-center justify-between p-4 bg-green-50 rounded-xl border border-green-100">
+        <div className="flex items-center justify-between p-4 bg-green-50 rounded-2xl border border-green-100">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
               <Shield size={16} className="text-green-600" />
             </div>
+
             <div>
-              <p className="font-semibold text-gray-900 text-sm">2FA Aktif</p>
-              <p className="text-xs text-gray-400">Akun kamu lebih aman</p>
+              <p className="font-semibold text-gray-900 text-sm">
+                2FA Aktif
+              </p>
+
+              <p className="text-xs text-gray-400">
+                Akun kamu lebih aman
+              </p>
             </div>
           </div>
+
           <Toggle checked={enabled} onChange={setEnabled} />
         </div>
 
         {/* Metode */}
         <div>
-          <p className="text-sm font-semibold text-gray-700 mb-3">Metode Verifikasi</p>
-          <div className="space-y-2">
+          <p className="text-sm font-semibold text-gray-700 mb-3">
+            Metode Verifikasi
+          </p>
+
+          <div className="space-y-3">
             {[
-              { key: 'sms',   label: 'SMS OTP',         desc: 'Kode dikirim ke nomor HP kamu', icon: Smartphone },
-              { key: 'email', label: 'Email OTP',        desc: 'Kode dikirim ke email kamu',    icon: Bell },
-              { key: 'app',   label: 'Authenticator App', desc: 'Google Authenticator / Authy',  icon: Shield },
-            ].map(m => (
-              <div key={m.key} onClick={() => setMethod(m.key)}
-                className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${method === m.key ? 'border-[#22c55e] bg-[#22c55e]/5' : 'border-gray-200 hover:border-gray-300'}`}>
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${method === m.key ? 'bg-[#22c55e]/15' : 'bg-gray-100'}`}>
-                  <m.icon size={16} className={method === m.key ? 'text-[#22c55e]' : 'text-gray-400'} />
+              {
+                key: 'sms',
+                label: 'SMS OTP',
+                desc: 'Kode dikirim ke nomor HP kamu',
+                icon: Smartphone,
+              },
+              {
+                key: 'email',
+                label: 'Email OTP',
+                desc: 'Kode dikirim ke email kamu',
+                icon: Bell,
+              },
+              {
+                key: 'app',
+                label: 'Authenticator App',
+                desc: 'Google Authenticator / Authy',
+                icon: Shield,
+              },
+            ].map((m) => (
+              <div
+                key={m.key}
+                onClick={() => setMethod(m.key)}
+                className={`flex items-center gap-3 p-4 rounded-2xl border cursor-pointer transition-all ${
+                  method === m.key
+                    ? 'border-[#22c55e] bg-[#22c55e]/5'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                    method === m.key
+                      ? 'bg-[#22c55e]/15'
+                      : 'bg-gray-100'
+                  }`}
+                >
+                  <m.icon
+                    size={16}
+                    className={
+                      method === m.key
+                        ? 'text-[#22c55e]'
+                        : 'text-gray-400'
+                    }
+                  />
                 </div>
+
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-900 text-sm">{m.label}</p>
-                  <p className="text-xs text-gray-400">{m.desc}</p>
+                  <p className="font-semibold text-gray-900 text-sm">
+                    {m.label}
+                  </p>
+
+                  <p className="text-xs text-gray-400">
+                    {m.desc}
+                  </p>
                 </div>
-                <div className={`w-4 h-4 rounded-full border-2 ${method === m.key ? 'border-[#22c55e] bg-[#22c55e]' : 'border-gray-300'}`} />
+
+                <div
+                  className={`w-4 h-4 rounded-full border-2 ${
+                    method === m.key
+                      ? 'border-[#22c55e] bg-[#22c55e]'
+                      : 'border-gray-300'
+                  }`}
+                />
               </div>
             ))}
           </div>
         </div>
-        <button className="w-full py-3 bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold rounded-xl transition-colors">
-          Simpan Pengaturan 2FA
-        </button>
+
+        {/* Button */}
+        <div className="pt-1">
+          <button className="w-full py-3 bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-bold rounded-2xl transition-colors">
+            Simpan Pengaturan 2FA
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -824,48 +966,61 @@ function SesiAktifPage({ onBack }) {
   ])
 
   return (
-    <div className="p-4 sm:p-5 lg:p-6">
-      <BackHeader
-        onBack={onBack}
-        title="Keamanan"
-        subtitle="Kata Sandi & Sesi"
-      />
+    <div className="p-6">
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 lg:p-6">
+        {/* Header */}
+        <div className="flex items-start gap-3 border-b border-gray-100 pb-4 mb-5">
+          <button
+            onClick={onBack}
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50 hover:bg-gray-100 transition text-lg shrink-0"
+          >
+            ←
+          </button>
 
-        {/* HEADER */}
-        <div
-          className="
-            flex flex-col
-            sm:flex-row sm:items-center sm:justify-between
-
-            gap-4
-
-            border-b border-gray-100
-            pb-4 mb-5
-          "
-        >
-          <div className="min-w-0">
-            <h2 className="font-bold text-gray-900 text-base sm:text-lg">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl font-bold text-gray-900">
               Sesi Aktif
             </h2>
 
-            <p className="text-xs sm:text-sm text-gray-400 mt-1 leading-relaxed">
+            <p className="text-xs text-gray-400 mt-1 leading-5">
               Perangkat yang sedang login ke akun Fingo kamu
             </p>
           </div>
 
-          {/* DESKTOP TETAP */}
           <button
             className="
-              w-full sm:w-auto
+              hidden sm:block
 
               px-4 py-2
 
-              rounded-xl
+              rounded-2xl
 
               bg-red-50
-              border border-red-200
+
+              text-red-500
+              text-xs
+              font-semibold
+
+              hover:bg-red-100
+              transition-colors
+            "
+          >
+            Keluarkan Semua
+          </button>
+        </div>
+
+        {/* Mobile Button */}
+        <div className="sm:hidden mb-4">
+          <button
+            className="
+              w-full
+
+              px-4 py-3
+
+              rounded-2xl
+
+              bg-red-50
 
               text-red-500
               text-sm
@@ -879,24 +1034,23 @@ function SesiAktifPage({ onBack }) {
           </button>
         </div>
 
-        {/* LIST */}
+        {/* List */}
         <div className="space-y-3">
-
           {sessions.map((s) => (
             <div
               key={s.id}
               className="
                 flex items-start sm:items-center
-                gap-3 sm:gap-4
+                gap-3
 
                 p-4
 
-                rounded-xl
+                rounded-2xl
                 border border-gray-100
               "
             >
 
-              {/* ICON */}
+              {/* Icon */}
               <div
                 className="
                   w-10 h-10
@@ -915,42 +1069,18 @@ function SesiAktifPage({ onBack }) {
                 />
               </div>
 
-              {/* CONTENT */}
+              {/* Content */}
               <div className="flex-1 min-w-0">
-
-                <p
-                  className="
-                    font-semibold
-                    text-gray-900
-
-                    text-sm
-                    sm:text-sm
-
-                    leading-snug
-                  "
-                >
+                <p className="font-semibold text-gray-900 text-sm leading-snug">
                   {s.device}
                 </p>
 
-                <p
-                  className="
-                    text-[11px]
-                    sm:text-xs
-
-                    text-gray-400
-
-                    mt-1
-
-                    leading-relaxed
-                    break-words
-                  "
-                >
+                <p className="text-[11px] text-gray-400 mt-1 leading-relaxed break-words">
                   {s.info}
                 </p>
 
-                {/* MOBILE BUTTON */}
+                {/* Mobile Action */}
                 <div className="mt-3 sm:hidden">
-
                   {s.current ? (
                     <span
                       className="
@@ -961,7 +1091,6 @@ function SesiAktifPage({ onBack }) {
                         rounded-xl
 
                         bg-[#22c55e]/10
-                        border border-[#22c55e]
 
                         text-[#22c55e]
                         text-[11px]
@@ -983,7 +1112,6 @@ function SesiAktifPage({ onBack }) {
                         rounded-xl
 
                         bg-red-50
-                        border border-red-200
 
                         text-red-500
                         text-[11px]
@@ -999,7 +1127,7 @@ function SesiAktifPage({ onBack }) {
                 </div>
               </div>
 
-              {/* DESKTOP BUTTON */}
+              {/* Desktop Action */}
               <div className="hidden sm:block shrink-0">
                 {s.current ? (
                   <span
@@ -1009,7 +1137,6 @@ function SesiAktifPage({ onBack }) {
                       rounded-xl
 
                       bg-[#22c55e]/10
-                      border border-[#22c55e]
 
                       text-[#22c55e]
                       text-xs
@@ -1031,7 +1158,6 @@ function SesiAktifPage({ onBack }) {
                       rounded-xl
 
                       bg-red-50
-                      border border-red-200
 
                       text-red-500
                       text-xs
@@ -1055,31 +1181,106 @@ function SesiAktifPage({ onBack }) {
 
 function RiwayatAktivitasPage({ onBack }) {
   const LOGS = [
-    { label: 'Login berhasil',             desc: 'Chrome · Bandung · Hari ini, 08:42',     status: 'Aman',     color: 'bg-green-100 text-green-700' },
-    { label: 'Verifikasi 2FA diminta',     desc: 'iPhone 15 · Bandung · Kemarin, 19:15',   status: 'Aman',     color: 'bg-green-100 text-green-700' },
-    { label: 'Percobaan login gagal (3×)', desc: 'Firefox · Jakarta · 3 hari lalu, 02:31', status: 'Diblokir', color: 'bg-red-100 text-red-600' },
-    { label: 'Email terverifikasi',        desc: 'aisyah@example.com · 7 hari lalu',       status: 'Sukses',   color: 'bg-green-100 text-green-700' },
-    { label: '2FA diaktifkan',             desc: 'Via SMS OTP · 14 hari lalu',             status: 'Sukses',   color: 'bg-green-100 text-green-700' },
+    {
+      label: 'Login berhasil',
+      desc: 'Chrome · Bandung · Hari ini, 08:42',
+      status: 'Aman',
+      color: 'bg-green-100 text-green-700',
+    },
+    {
+      label: 'Verifikasi 2FA diminta',
+      desc: 'iPhone 15 · Bandung · Kemarin, 19:15',
+      status: 'Aman',
+      color: 'bg-green-100 text-green-700',
+    },
+    {
+      label: 'Percobaan login gagal (3×)',
+      desc: 'Firefox · Jakarta · 3 hari lalu, 02:31',
+      status: 'Diblokir',
+      color: 'bg-red-100 text-red-600',
+    },
+    {
+      label: 'Email terverifikasi',
+      desc: 'aisyah@example.com · 7 hari lalu',
+      status: 'Sukses',
+      color: 'bg-green-100 text-green-700',
+    },
+    {
+      label: '2FA diaktifkan',
+      desc: 'Via SMS OTP · 14 hari lalu',
+      status: 'Sukses',
+      color: 'bg-green-100 text-green-700',
+    },
   ]
+
   return (
     <div className="p-6">
-      {/* <BackHeader onBack={onBack} title="Keamanan" subtitle="Kata Sandi & Sesi" /> */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <div className="border-b border-gray-100 pb-4 mb-5">
-          <h2 className="font-bold text-gray-900">Riwayat Aktivitas Keamanan</h2>
-          <p className="text-sm text-gray-400">Log 30 hari terakhir</p>
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-5">
+
+        {/* Header */}
+        <div className="flex items-start gap-3 border-b border-gray-100 pb-4 mb-5">
+          <button
+            onClick={onBack}
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50 hover:bg-gray-100 transition text-lg shrink-0"
+          >
+            ←
+          </button>
+
+          <div className="flex-1">
+            <h2 className="text-xl font-bold text-gray-900">
+              Riwayat Aktivitas
+            </h2>
+
+            <p className="text-xs text-gray-400 mt-1 leading-5">
+              Log aktivitas keamanan 30 hari terakhir
+            </p>
+          </div>
         </div>
+
+        {/* List */}
         <div className="divide-y divide-gray-100">
           {LOGS.map((log, i) => (
-            <div key={i} className="flex items-center gap-4 py-3.5">
-              <div className="w-9 h-9 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
-                <Clock size={15} className="text-gray-400" />
+            <div
+              key={i}
+              className="flex items-start gap-3 py-4"
+            >
+
+              {/* Icon */}
+              <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+                <Clock
+                  size={16}
+                  className="text-gray-400"
+                />
               </div>
+
+              {/* Content */}
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 text-sm">{log.label}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{log.desc}</p>
+                <p className="font-semibold text-gray-900 text-sm leading-snug">
+                  {log.label}
+                </p>
+
+                <p className="text-[11px] text-gray-400 mt-1 leading-relaxed">
+                  {log.desc}
+                </p>
               </div>
-              <span className={`px-3 py-1 rounded-full text-xs font-semibold shrink-0 ${log.color}`}>{log.status}</span>
+
+              {/* Status */}
+              <span
+                className={`
+                  px-3 py-1.5
+
+                  rounded-xl
+
+                  text-[11px]
+                  font-semibold
+
+                  shrink-0
+
+                  ${log.color}
+                `}
+              >
+                {log.status}
+              </span>
             </div>
           ))}
         </div>
@@ -1293,44 +1494,178 @@ function KeamananSettings({ onBack }) {
 // ════════════════════════════════════════════════════════════════
 function PreferensiSettings({ onBack }) {
   const [prefs, setPrefs] = useState({
-    grafik: 'Gelap', perPage: '20',
-    formatPendek: true, sembunyiSaldo: true,
-    matauang: 'IDR', pemisah: 'Titik (1.000.000)',
+    grafik: 'Gelap',
+    perPage: '20',
+    formatPendek: true,
+    sembunyiSaldo: true,
+    matauang: 'IDR',
+    pemisah: 'Titik (1.000.000)',
   })
-  const set = (key) => (val) => setPrefs(p => ({ ...p, [key]: val }))
+
+  const setValue = (key, value) => {
+    setPrefs((prev) => ({
+      ...prev,
+      [key]: value,
+    }))
+  }
 
   return (
     <div className="p-6">
-      <BackHeader onBack={onBack} title="Preferensi" subtitle="Tampilan & Format" />
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100">
-          <h2 className="font-bold text-gray-900">Tampilan Data & Dashboard</h2>
-          <p className="text-sm text-gray-400">Kustomisasi cara data keuangan ditampilkan</p>
+      <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+
+        {/* HEADER */}
+        <div className="flex items-start gap-3 border-b border-gray-100 px-5 py-4">
+          <button
+            onClick={onBack}
+            className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50 hover:bg-gray-100 transition text-lg shrink-0"
+          >
+            ←
+          </button>
+
+          <div className="flex-1">
+            <h2 className="text-xl font-bold text-gray-900">
+              Preferensi
+            </h2>
+
+            <p className="text-xs text-gray-400 mt-1">
+              Tampilan & Format
+            </p>
+          </div>
         </div>
 
-        <SelectRow icon={BarChart2} iconBg="bg-blue-100" iconColor="text-blue-600"
-          label="Grafik Default Dashboard" desc="Pilih tampilan grafik yang muncul pertama kali di dashboard"
-          value={prefs.grafik} onChange={set('grafik')} options={['Gelap','Terang','Otomatis']} />
+        {/* ITEM */}
+        <div className="divide-y divide-gray-100">
 
-        <SelectRow icon={List} iconBg="bg-purple-100" iconColor="text-purple-600"
-          label="Jumlah Transaksi per Halaman" desc="Tampilkan berapa transaksi per halaman di riwayat"
-          value={prefs.perPage} onChange={set('perPage')} options={['10','20','50','100']} />
+          {/* Grafik */}
+          <div className="flex items-center gap-3 px-5 py-4 min-h-[78px]">
+            <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+              <BarChart2 size={18} className="text-blue-600" />
+            </div>
 
-        <NotifRow icon={DollarSign} iconBg="bg-green-100" iconColor="text-green-600"
-          label="Format Nominal Pendek" desc='Tampilkan Rp 1.200.000 sebagai "Rp 1,2 jt" di dashboard'
-          checked={prefs.formatPendek} onChange={v => set('formatPendek')(v)} />
+            <div className="flex-1 flex items-center">
+              <p className="font-semibold text-gray-900 text-sm">
+                Grafik Default Dashboard
+              </p>
+            </div>
 
-        <NotifRow icon={EyeOff} iconBg="bg-gray-100" iconColor="text-gray-600"
-          label="Sembunyikan Nominal Saldo" desc='Tampilkan saldo sebagai "•••••" untuk privasi'
-          checked={prefs.sembunyiSaldo} onChange={v => set('sembunyiSaldo')(v)} />
+            <select
+              value={prefs.grafik}
+              onChange={(e) => setValue('grafik', e.target.value)}
+              className="px-3 py-2 rounded-xl border border-gray-200 text-xs outline-none"
+            >
+              <option>Gelap</option>
+              <option>Terang</option>
+              <option>Otomatis</option>
+            </select>
+          </div>
 
-        <SelectRow icon={DollarSign} iconBg="bg-yellow-100" iconColor="text-yellow-600"
-          label="Mata Uang" desc={null}
-          value={prefs.matauang} onChange={set('matauang')} options={['IDR','USD','SGD','MYR']} />
+          {/* Per Page */}
+          <div className="flex items-center gap-3 px-5 py-4 min-h-[78px]">
+            <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center shrink-0">
+              <List size={18} className="text-purple-600" />
+            </div>
 
-        <SelectRow icon={Sliders} iconBg="bg-orange-100" iconColor="text-orange-600"
-          label="Pemisah Nominal" desc={null}
-          value={prefs.pemisah} onChange={set('pemisah')} options={['Titik (1.000.000)','Koma (1,000,000)']} />
+            <div className="flex-1 flex items-center">
+              <p className="font-semibold text-gray-900 text-sm">
+                Jumlah Transaksi
+              </p>
+            </div>
+
+            <select
+              value={prefs.perPage}
+              onChange={(e) => setValue('perPage', e.target.value)}
+              className="px-3 py-2 rounded-xl border border-gray-200 text-xs outline-none"
+            >
+              <option>10</option>
+              <option>20</option>
+              <option>50</option>
+              <option>100</option>
+            </select>
+          </div>
+
+          {/* Format Pendek */}
+          <div className="flex items-center gap-3 px-5 py-4 min-h-[78px]">
+            <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
+              <DollarSign size={18} className="text-green-600" />
+            </div>
+
+            <div className="flex-1 flex items-center">
+              <p className="font-semibold text-gray-900 text-sm">
+                Format Nominal Pendek
+              </p>
+            </div>
+
+            <Toggle
+              checked={prefs.formatPendek}
+              onChange={(v) => setValue('formatPendek', v)}
+            />
+          </div>
+
+          {/* Sembunyikan Saldo */}
+          <div className="flex items-center gap-3 px-5 py-4 min-h-[78px]">
+            <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+              <EyeOff size={18} className="text-gray-600" />
+            </div>
+
+            <div className="flex-1 flex items-center">
+              <p className="font-semibold text-gray-900 text-sm">
+                Sembunyikan Saldo
+              </p>
+            </div>
+
+            <Toggle
+              checked={prefs.sembunyiSaldo}
+              onChange={(v) => setValue('sembunyiSaldo', v)}
+            />
+          </div>
+
+          {/* Mata Uang */}
+          <div className="flex items-center gap-3 px-5 py-4 min-h-[78px]">
+            <div className="w-10 h-10 rounded-xl bg-yellow-100 flex items-center justify-center shrink-0">
+              <DollarSign size={18} className="text-yellow-600" />
+            </div>
+
+            <div className="flex-1 flex items-center">
+              <p className="font-semibold text-gray-900 text-sm">
+                Mata Uang
+              </p>
+            </div>
+
+            <select
+              value={prefs.matauang}
+              onChange={(e) => setValue('matauang', e.target.value)}
+              className="px-3 py-2 rounded-xl border border-gray-200 text-xs outline-none"
+            >
+              <option>IDR</option>
+              <option>USD</option>
+              <option>SGD</option>
+              <option>MYR</option>
+            </select>
+          </div>
+
+          {/* Pemisah */}
+          <div className="flex items-center gap-3 px-5 py-4 min-h-[78px]">
+            <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
+              <Sliders size={18} className="text-orange-600" />
+            </div>
+
+            <div className="flex-1 flex items-center">
+              <p className="font-semibold text-gray-900 text-sm">
+                Pemisah Nominal
+              </p>
+            </div>
+
+            <select
+              value={prefs.pemisah}
+              onChange={(e) => setValue('pemisah', e.target.value)}
+              className="px-3 py-2 rounded-xl border border-gray-200 text-xs outline-none"
+            >
+              <option>Titik (1.000.000)</option>
+              <option>Koma (1,000,000)</option>
+            </select>
+          </div>
+
+        </div>
       </div>
     </div>
   )
@@ -1357,7 +1692,7 @@ function IntegrasiSettings({ onBack }) {
           </div>
           <div>
             <h2 className="font-bold text-gray-900">E-wallet & Rekening Terhubung</h2>
-            <p className="text-sm text-gray-400 mt-1 leading-relaxed">
+            <p className="text-xs sm:text-sm text-gray-400 mt-1 leading-relaxed break-words">
               Hubungkan akun keuanganmu agar Fingo bisa sinkronisasi transaksi secara otomatis.
               Data selalu aman dan terenkripsi — Fingo hanya punya akses baca, tidak bisa transfer dana.
             </p>
