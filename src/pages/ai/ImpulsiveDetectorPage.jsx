@@ -27,9 +27,6 @@ export default function ImpulsiveDetectorPage() {
           <h1 className="text-2xl font-black text-gray-900">Implusive Detector</h1>
           <p className="text-gray-400 text-sm mt-0.5">Cek apakah pengeluaranmu termasuk implusive dengan analisis AI</p>
         </div>
-        <button className="w-10 h-10 rounded-xl border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:bg-gray-50 shadow-sm">
-          <Bell size={18} />
-        </button>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6">
