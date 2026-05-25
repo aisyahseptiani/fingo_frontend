@@ -13,7 +13,7 @@ export default function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex z-40 safe-area-inset-bottom">
       {NAV.map(({ path, label, icon: Icon }) => (
-        <NavLink key={path} to={path} end={path === '/'}
+        <NavLink key={path} to={path} end
           className={({ isActive }) =>
             `flex-1 flex flex-col items-center justify-center py-2 gap-0.5 transition-colors min-h-[56px]
             ${isActive ? 'text-[#22c55e]' : 'text-gray-400'}`

@@ -2,10 +2,9 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Plus, ClockIcon, Zap,
-  TrendingUp, Wallet, MessageSquare, Settings, LogOut
+  TrendingUp, Wallet, MessageSquare, Settings
 } from 'lucide-react'
 import { useAuthContext } from '../../context/AuthContext'
-import { useLogout } from '../../hooks/useAuth'
 import fingoLogo from '../../assets/images/fingo-logo.png'
 
 const MENU_UTAMA = [
@@ -23,8 +22,7 @@ const ANALITIK = [
 ]
 
 export default function Sidebar() {
-  const { user } = useAuthContext()
-  const { mutate: logout } = useLogout()
+  const { user } = useAuthContext();
 
   const linkClass = ({ isActive }) =>
     `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
@@ -56,8 +54,7 @@ export default function Sidebar() {
           <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase px-3 mb-2">Menu Utama</p>
           <div className="space-y-0.5">
             {MENU_UTAMA.map(({ path, label, icon: Icon }) => (
-              <NavLink key={path} to={path} end={path === '/'} className={linkClass}>
-                <Icon size={17} />
+              <NavLink key={path} to={path} end className={linkClass}>
                 {label}
               </NavLink>
             ))}
@@ -80,8 +77,13 @@ export default function Sidebar() {
 
       {/* User info + logout */}
       <div className="px-3 py-4 border-t border-gray-100">
-        <div className="flex items-center gap-3 px-2 py-2">
-          {/* Avatar */}
+        <NavLink
+          to="/profile"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-2 py-2 rounded-xl transition-colors
+            ${isActive ? 'bg-[#22c55e]/10' : 'hover:bg-gray-100'}`
+          }
+        >
           <div className="w-9 h-9 rounded-full bg-[#22c55e] flex items-center justify-center text-white font-bold text-sm shrink-0">
             {user?.name?.charAt(0).toUpperCase() ?? 'U'}
           </div>
@@ -89,14 +91,7 @@ export default function Sidebar() {
             <p className="text-sm font-semibold text-gray-900 truncate">{user?.name ?? 'Pengguna'}</p>
             <p className="text-xs text-gray-400 truncate">{user?.jobType ?? 'Gig Worker'}</p>
           </div>
-          <button
-            onClick={() => logout()}
-            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-            title="Keluar"
-          >
-            <LogOut size={15} />
-          </button>
-        </div>
+        </NavLink>
       </div>
     </aside>
   )

@@ -1,11 +1,9 @@
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, Plus, ClockIcon, Zap,
-  TrendingUp, Wallet, MessageSquare, Settings,
-  X, LogOut,
+  TrendingUp, Wallet, MessageSquare, Settings, X,
 } from 'lucide-react'
 import { useAuthContext } from '../../context/AuthContext'
-import { useLogout } from '../../hooks/useAuth'
 import fingoLogo from '../../assets/images/fingo-logo.png'
 
 const MENU_UTAMA = [
@@ -24,7 +22,6 @@ const ANALITIK = [
 
 export default function MobileDrawer({ isOpen, onClose }) {
   const { user } = useAuthContext()
-  const { mutate: logout } = useLogout()
 
   const linkClass = ({ isActive }) =>
     `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
@@ -85,7 +82,7 @@ export default function MobileDrawer({ isOpen, onClose }) {
                 <NavLink
                   key={path}
                   to={path}
-                  end={path === '/'}
+                  end
                   className={linkClass}
                   onClick={onClose}
                 >
@@ -118,7 +115,14 @@ export default function MobileDrawer({ isOpen, onClose }) {
 
         {/* User info */}
         <div className="px-3 py-4 border-t border-gray-100">
-          <div className="flex items-center gap-3 px-2 py-2">
+          <NavLink
+            to="/profile"
+            onClick={onClose}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-2 py-2 rounded-xl transition-colors
+              ${isActive ? 'bg-[#22c55e]/10' : 'hover:bg-gray-100'}`
+            }
+          >
             <div className="w-9 h-9 rounded-full bg-[#22c55e] flex items-center justify-center text-white font-bold text-sm shrink-0">
               {user?.name?.charAt(0).toUpperCase() ?? 'A'}
             </div>
@@ -130,13 +134,7 @@ export default function MobileDrawer({ isOpen, onClose }) {
                 {user?.jobType ?? 'Gig Worker'}
               </p>
             </div>
-            <button
-              onClick={() => { logout(); onClose() }}
-              className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-            >
-              <LogOut size={15} />
-            </button>
-          </div>
+          </NavLink>
         </div>
       </div>
     </>

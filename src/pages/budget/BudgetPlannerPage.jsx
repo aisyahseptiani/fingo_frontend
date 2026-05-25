@@ -266,9 +266,6 @@ function ProgressView({ income, savedValues, onReset }) {
             className="px-3 lg:px-4 py-2 rounded-xl border border-[#22c55e] text-[#22c55e] text-xs lg:text-sm font-semibold hover:bg-[#22c55e]/10 transition-colors">
             Atur Ulang
           </button>
-          <button className="w-9 h-9 lg:w-10 lg:h-10 rounded-xl border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:bg-gray-50 shadow-sm">
-            <Bell size={17} />
-          </button>
         </div>
       </div>
       {(warnings.length > 0 || overItems.length > 0) && <Alerts />}
