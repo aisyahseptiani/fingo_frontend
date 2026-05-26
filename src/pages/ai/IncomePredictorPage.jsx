@@ -245,7 +245,7 @@ export default function IncomePredictorPage() {
       </div>
 
       {/* CHART */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 lg:p-5 overflow-hidden">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 lg:p-5">
 
         {/* Legend */}
         <div className="flex flex-wrap justify-end gap-4 mb-3">
@@ -266,10 +266,10 @@ export default function IncomePredictorPage() {
           </div>
         </div>
 
-        <div className="w-full h-[260px] sm:h-[320px]">
+        <div className="w-full">
           <ResponsiveContainer
             width="100%"
-            height="100%"
+            height={320}
           >
             <LineChart
               data={data}

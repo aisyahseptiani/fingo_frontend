@@ -1,5 +1,6 @@
+
 import { useState } from 'react'
-import { ArrowLeft, Plus } from 'lucide-react'
+import { ArrowLeft, Plus, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuthContext } from '../../context/AuthContext'
 
@@ -30,8 +31,30 @@ const STAT_CARDS = [
 ]
 
 export default function ProfilePage() {
-  const navigate    = useNavigate()
+  const navigate = useNavigate()
   const { user, logout } = useAuthContext()
+
+  // =========================
+  // NEW STATE
+  // =========================
+  const [showTargetModal, setShowTargetModal] = useState(false)
+  const [targetDescription, setTargetDescription] = useState('')
+  const [targetAmount, setTargetAmount] = useState('')
+
+  const handleSaveTarget = () => {
+    if (!targetDescription || !targetAmount) return
+
+    // nanti bisa disambungkan ke API / database
+    console.log({
+      description: targetDescription,
+      amount: targetAmount
+    })
+
+    // reset form
+    setTargetDescription('')
+    setTargetAmount('')
+    setShowTargetModal(false)
+  }
 
   return (
     <div className="px-4 py-4 lg:px-6 lg:py-6 pb-24 lg:pb-6 space-y-4 lg:space-y-5">
@@ -96,14 +119,11 @@ export default function ProfilePage() {
 
         {/* Mobile layout */}
         <div className="lg:hidden">
-          {/* Baris atas: avatar + info + skor */}
           <div className="flex items-start gap-4">
-            {/* Avatar */}
             <div className="w-16 h-16 rounded-2xl bg-gray-100 shrink-0 flex items-center justify-center text-2xl font-black text-gray-300">
               {user?.name?.charAt(0) ?? 'A'}
             </div>
 
-            {/* Info */}
             <div className="flex-1 min-w-0">
               <h2 className="text-lg font-black text-gray-900 leading-tight">
                 {user?.name ?? 'Aisyah Septiani'}
@@ -116,7 +136,6 @@ export default function ProfilePage() {
               </p>
             </div>
 
-            {/* Skor kecil */}
             <div className="shrink-0 flex flex-col items-center">
               <div className="relative w-16 h-16">
                 <svg viewBox="0 0 36 36" className="w-16 h-16 -rotate-90">
@@ -133,7 +152,6 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Badge verifikasi */}
           <div className="mt-3">
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#22c55e] text-[#22c55e] text-xs font-semibold">
               ✓ Pengguna Terverifikasi
@@ -142,9 +160,7 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* ── STAT CARDS ──
-          Desktop: 4 kolom
-          Mobile: 2x2 grid */}
+      {/* ── STAT CARDS ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         {STAT_CARDS.map((s, i) => (
           <div key={i} className="bg-white rounded-xl border border-gray-100 shadow-sm p-3.5 lg:p-5">
@@ -155,9 +171,7 @@ export default function ProfilePage() {
         ))}
       </div>
 
-      {/* ── AKTIVITAS + TARGET ──
-          Desktop: 2 kolom
-          Mobile: stack */}
+      {/* ── AKTIVITAS + TARGET ── */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-5">
 
         {/* Aktivitas Keuangan */}
@@ -197,7 +211,12 @@ export default function ProfilePage() {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 lg:p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-gray-900 text-sm lg:text-base">Target Keuangan</h2>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#22c55e]/10 border border-[#22c55e] text-[#22c55e] text-xs font-semibold rounded-xl hover:bg-[#22c55e]/20 transition-colors shrink-0">
+
+            {/* UPDATED BUTTON */}
+            <button
+              onClick={() => setShowTargetModal(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[#22c55e]/10 border border-[#22c55e] text-[#22c55e] text-xs font-semibold rounded-xl hover:bg-[#22c55e]/20 transition-colors shrink-0"
+            >
               <Plus size={12} /> Tambah
             </button>
           </div>
@@ -243,6 +262,85 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* ========================================= */}
+      {/* MODAL TAMBAH TARGET KEUANGAN */}
+      {/* ========================================= */}
+      {showTargetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in duration-200">
+
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 lg:px-5 py-4 border-b border-gray-100">
+              <div>
+                <h2 className="text-base lg:text-lg font-black text-gray-900">
+                  Tambah Target
+                </h2>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  Buat target keuangan baru
+                </p>
+              </div>
+
+              <button
+                onClick={() => setShowTargetModal(false)}
+                className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
+              >
+                <X size={18} className="text-gray-500" />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-4 lg:p-5 space-y-4">
+
+              {/* Deskripsi */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Deskripsi Target
+                </label>
+                <input
+                  type="text"
+                  placeholder="Contoh: Beli Motor Baru"
+                  value={targetDescription}
+                  onChange={(e) => setTargetDescription(e.target.value)}
+                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#22c55e]/20 focus:border-[#22c55e] transition-all"
+                />
+              </div>
+
+              {/* Jumlah */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Jumlah Target
+                </label>
+                <input
+                  type="number"
+                  placeholder="Contoh: 10000000"
+                  value={targetAmount}
+                  onChange={(e) => setTargetAmount(e.target.value)}
+                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#22c55e]/20 focus:border-[#22c55e] transition-all"
+                />
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
+                <button
+                  onClick={() => setShowTargetModal(false)}
+                  className="w-full sm:w-1/2 px-4 py-3 rounded-xl border border-gray-200 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition-colors"
+                >
+                  Batal
+                </button>
+
+                <button
+                  onClick={handleSaveTarget}
+                  className="w-full sm:w-1/2 px-4 py-3 rounded-xl bg-[#22c55e] text-white text-sm font-semibold hover:bg-[#16a34a] transition-colors"
+                >
+                  Simpan Target
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
+
