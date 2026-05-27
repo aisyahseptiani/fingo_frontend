@@ -1,7 +1,7 @@
-
 import { useState } from 'react'
 import { ArrowLeft, Plus, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import { useAuthContext } from '../../context/AuthContext'
 
 const formatRp = (n) => new Intl.NumberFormat('id-ID', {
@@ -343,4 +343,3 @@ export default function ProfilePage() {
     </div>
   )
 }
-

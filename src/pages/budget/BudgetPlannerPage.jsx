@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Bell, Check, AlertTriangle, ShoppingCart, Car, Zap,
   Heart, Home, Tv, Music, BookOpen, Shield,
   TrendingUp, Coffee, Utensils
 } from 'lucide-react'
+import { useNotifications } from '../../context/NotificationContext'
 
 const formatRp = (n) => new Intl.NumberFormat('id-ID').format(Number(n) || 0)
 const parseNum = (str) => Number(String(str).replace(/\./g, '').replace(/[^0-9]/g, '')) || 0
@@ -135,6 +136,8 @@ function BudgetColumn({ col, income, values, aiRec, onChange, compact }) {
 
 // ─── Progress View ────────────────────────────────────────────────
 function ProgressView({ income, savedValues, onReset }) {
+  const { addNotification } = useNotifications()
+
   const DUMMY_SPENT_PCT = {
     'Makanan & Minuman': 0.85, 'Transportasi': 0.45, 'Tagihan': 0.95,
     'Kesehatan': 0.26, 'Kebutuhan Rumah': 0.40, 'Belanja': 1.05,
@@ -153,6 +156,28 @@ function ProgressView({ income, savedValues, onReset }) {
 
   const warnings  = activeItems.filter(d => d.percent >= 80 && d.percent <= 100)
   const overItems = activeItems.filter(d => d.percent > 100)
+
+  // Otomatis kirim peringatan budget ke notifikasi saat ProgressView pertama kali tampil
+  useEffect(() => {
+    warnings.forEach(d => {
+      addNotification({
+        id: `budget_warn_${d.cat}`,  // id statis per kategori → tidak duplikat
+        type: 'budget_warning',
+        title: `Budget ${d.cat} hampir habis!`,
+        message: `Sudah ${d.percent}% terpakai. Sisa Rp ${formatRp(d.limit - d.spent)}. Hati-hati agar tidak melebihi batas.`,
+        source: 'Budget Planner',
+      })
+    })
+    overItems.forEach(d => {
+      addNotification({
+        id: `budget_over_${d.cat}`,  // id statis per kategori → tidak duplikat
+        type: 'budget_warning',
+        title: `Budget ${d.cat} terlampaui!`,
+        message: `Sudah ${d.percent}% dari batas Rp ${formatRp(d.limit)}. Segera kurangi pengeluaran di kategori ini.`,
+        source: 'Budget Planner',
+      })
+    })
+  }, [addNotification, warnings.length, overItems.length])
 
   const Alerts = () => (
     <div className="space-y-2">

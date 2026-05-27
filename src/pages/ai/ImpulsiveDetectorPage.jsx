@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNotifications } from '../../context/NotificationContext'
 import { Bell } from 'lucide-react'
 
 const CATEGORIES = ['Makanan', 'Transportasi', 'Hiburan', 'Belanja', 'Pendidikan', 'Kesehatan', 'Tagihan', 'Lain-lain']
@@ -13,10 +14,20 @@ export default function ImpulsiveDetectorPage() {
   const [form, setForm] = useState({ description: '', amount: '', category: '', reason: '' })
   const [planned, setPlanned] = useState(null) // null | 'no' | 'yes'
   const [analyzed, setAnalyzed] = useState(false)
+  const { addNotification } = useNotifications()
 
   const handleAnalyze = () => {
     if (!form.description || !form.amount) return
     setAnalyzed(true)
+
+    // Otomatis kirim hasil analisis ke notifikasi
+    addNotification({
+      id: `impulse_${form.description}_${form.amount}`,
+      type: 'ai_impulse',
+      title: `Transaksi "${form.description}" terdeteksi impulsif`,
+      message: `Skor impulsif 65% — Pertimbangkan menunggu 3 hari sebelum membeli. Sisa budget belanjamu hanya Rp 150.000.`,
+      source: 'Impulsive Detector',
+    })
   }
 
   return (
@@ -189,10 +200,10 @@ export default function ImpulsiveDetectorPage() {
             </p>
             <div className="grid grid-cols-2 gap-3">
               <button className="py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-                Tetap Catat
+                Batal
               </button>
               <button className="py-3 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-bold transition-colors">
-                Tetap Catat
+                Catat
               </button>
             </div>
           </div>

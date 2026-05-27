@@ -1,4 +1,5 @@
 // pages/dashboard/DashboardPage.jsx
+import { useEffect } from 'react'
 import { Bell, Plus, ChevronRight, TrendingUp, TrendingDown, Zap } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuthContext } from '../../context/AuthContext'
@@ -21,10 +22,19 @@ const DUMMY_WEEKLY = [
   { week: 'Pred.', income: 1100000, expense: 500000 },
 ]
 
+// Saran AI yang akan otomatis masuk ke notifikasi saat dashboard dimuat
+const AI_SUGGESTIONS = [
+  {
+    id: 'dashboard_ai_hiburan',
+    title: 'Kurangi Pengeluaran Hiburan',
+    message: 'Budget hiburanmu sudah 55% terpakai. Kurangi pengeluaran akhir bulan dan alihkan ke tabungan Rp 200.000 di bulan depan.',
+  },
+]
+
 export default function DashboardPage() {
   const { user } = useAuthContext()
   const { data, isLoading } = useDashboard()
-
+  
   const greeting = () => {
     const h = new Date().getHours()
     if (h < 11) return 'Selamat pagi'
@@ -36,7 +46,7 @@ export default function DashboardPage() {
   return (
     <div>
       {/* ════════════════════════════════════════
-          DESKTOP — persis sama seperti kode asli
+          DESKTOP
       ════════════════════════════════════════ */}
       <div className="hidden lg:block px-6 py-6 space-y-5">
 
@@ -137,7 +147,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ════════════════════════════════════════
-          MOBILE — elemen & warna identik desktop
+          MOBILE
       ════════════════════════════════════════ */}
       <div className="lg:hidden px-4 py-4 space-y-4 pb-24">
 
