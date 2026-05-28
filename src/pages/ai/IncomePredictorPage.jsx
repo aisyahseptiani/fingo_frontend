@@ -69,9 +69,6 @@ function OnboardingForm({ onComplete }) {
 
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-[#22c55e]/10 flex items-center justify-center mx-auto mb-4">
-            <TrendingUp size={32} className="text-[#22c55e]" />
-          </div>
           <h1 className="text-2xl lg:text-3xl font-black text-gray-900">Mulai Income Predictor</h1>
           <p className="text-gray-400 text-sm mt-2 max-w-md mx-auto leading-relaxed">
             Masukkan pendapatan <strong className="text-gray-600">4 minggu terakhir</strong> sebagai
