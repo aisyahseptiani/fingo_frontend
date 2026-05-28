@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useNotifications } from '../../context/NotificationContext'
-import { Bell } from 'lucide-react'
+import { useTransactionContext } from '../../context/TransactionContext'
+import { Bell, CheckCircle } from 'lucide-react'
 
 const CATEGORIES = ['Makanan', 'Transportasi', 'Hiburan', 'Belanja', 'Pendidikan', 'Kesehatan', 'Tagihan', 'Lain-lain']
 
@@ -13,8 +15,12 @@ const RISK_LEVEL = {
 export default function ImpulsiveDetectorPage() {
   const [form, setForm] = useState({ description: '', amount: '', category: '', reason: '' })
   const [planned, setPlanned] = useState(null) // null | 'no' | 'yes'
-  const [analyzed, setAnalyzed] = useState(false)
-  const { addNotification } = useNotifications()
+  const [analyzed, setAnalyzed]   = useState(false)
+  const [saved, setSaved]         = useState(false)
+  const { addNotification }       = useNotifications()
+  const { addTransaction } = useTransactionContext()
+  const [isPending, setIsPending] = useState(false)
+  const navigate                  = useNavigate()
 
   const handleAnalyze = () => {
     if (!form.description || !form.amount) return
@@ -28,6 +34,30 @@ export default function ImpulsiveDetectorPage() {
       message: `Skor impulsif 65% — Pertimbangkan menunggu 3 hari sebelum membeli. Sisa budget belanjamu hanya Rp 150.000.`,
       source: 'Impulsive Detector',
     })
+  }
+
+  const handleCatat = () => {
+    setIsPending(true)
+    addTransaction({
+      type:        'expense',
+      description: form.description,
+      amount:      Number(form.amount),
+      category:    form.category || 'Lain-lain',
+      method:      'Tunai',
+      isImpulsive: planned === 'no',
+    })
+    setTimeout(() => {
+      setIsPending(false)
+      setSaved(true)
+      addNotification({
+        id:      `impulse_saved_${Date.now()}`,
+        type:    'ai_impulse',
+        title:   `Transaksi "${form.description}" berhasil dicatat`,
+        message: `Rp ${Number(form.amount).toLocaleString('id-ID')} telah ditambahkan ke riwayat transaksi.`,
+        source:  'Impulsive Detector',
+      })
+      setTimeout(() => navigate('/transactions'), 1500)
+    }, 800)
   }
 
   return (
@@ -199,12 +229,28 @@ export default function ImpulsiveDetectorPage() {
               Saat ini sisa budget belanja kamu hanya <strong>Rp 150.000</strong>
             </p>
             <div className="grid grid-cols-2 gap-3">
-              <button className="py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+              <button
+                onClick={() => setAnalyzed(false)}
+                className="py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+              >
                 Batal
               </button>
-              <button className="py-3 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-bold transition-colors">
-                Catat
-              </button>
+              {saved ? (
+                <div className="py-3 rounded-xl bg-green-50 border border-[#22c55e] text-[#22c55e] text-sm font-bold flex items-center justify-center gap-2">
+                  <CheckCircle size={15} /> Tersimpan!
+                </div>
+              ) : (
+                <button
+                  onClick={handleCatat}
+                  disabled={isPending}
+                  className="py-3 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] disabled:opacity-60 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2"
+                >
+                  {isPending && (
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  )}
+                  Catat Transaksi
+                </button>
+              )}
             </div>
           </div>
 

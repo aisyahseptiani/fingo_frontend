@@ -188,10 +188,6 @@ export default function IncomePredictorPage() {
               </button>
             ))}
           </div>
-
-          <button className="hidden lg:flex w-10 h-10 rounded-xl border border-gray-200 bg-white items-center justify-center text-gray-500 hover:bg-gray-50 shadow-sm">
-            <Bell size={18} />
-          </button>
         </div>
       </div>
 

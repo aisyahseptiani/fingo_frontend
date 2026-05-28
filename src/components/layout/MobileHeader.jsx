@@ -1,12 +1,14 @@
 import { useState } from 'react'
-import { useLocation } from 'react-router-dom'
 import { Menu, Bell } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useNotifications } from '../../context/NotificationContext'
+import { useLocation } from 'react-router-dom'
 import MobileDrawer from './MobileDrawer'
 import fingoLogo from '../../assets/images/fingo-logo.png'
 
 export default function MobileHeader() {
   const [open, setOpen] = useState(false)
+  const { unreadCount } = useNotifications()
 
   return (
     <>
@@ -37,7 +39,11 @@ export default function MobileHeader() {
             className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors relative"
           >
             <Bell size={19} className="text-gray-600" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 border border-white">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </Link>
 
           <button

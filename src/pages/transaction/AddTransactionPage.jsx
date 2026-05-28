@@ -1,11 +1,9 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
-  Bell,
-  ChevronRight,
-  ArrowUpCircle,
-  ArrowDownCircle,
+  Bell, ChevronRight, ArrowUpCircle, ArrowDownCircle, CheckCircle,
 } from 'lucide-react'
+import { useTransactionContext } from '../../context/TransactionContext'
 
 const EXPENSE_CATEGORIES = [
   'Makanan',
@@ -34,33 +32,6 @@ const PAYMENT_METHODS = [
   'Kartu Kredit',
 ]
 
-const TODAY_TRANSACTIONS = [
-  {
-    id: 1,
-    description: 'Kopi & sarapan',
-    time: '09:15',
-    method: 'GoPay',
-    amount: 32000,
-    type: 'expense',
-  },
-  {
-    id: 2,
-    description: 'Gojek',
-    time: '09:15',
-    method: 'GoPay',
-    amount: 18000,
-    type: 'expense',
-  },
-  {
-    id: 3,
-    description: 'Pembayaran desain',
-    time: '09:15',
-    method: 'GoPay',
-    amount: 750000,
-    type: 'income',
-  },
-]
-
 const formatRp = n =>
   new Intl.NumberFormat('id-ID', {
     style: 'currency',
@@ -79,6 +50,8 @@ function FormContent({
   form,
   setForm,
   categories,
+  onSimpan,
+  saved,
 }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-5">
@@ -219,16 +192,14 @@ function FormContent({
       <div className="flex gap-3 pt-1">
         <button
           type="button"
-          className="flex-1 py-3.5 bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold rounded-xl transition-colors"
+          onClick={onSimpan}
+          className={`flex-1 py-3.5 font-bold rounded-xl transition-all flex items-center justify-center gap-2
+            ${saved
+              ? 'bg-green-50 border border-[#22c55e] text-[#22c55e]'
+              : 'bg-[#22c55e] hover:bg-[#16a34a] text-white'
+            }`}
         >
-          Simpan
-        </button>
-
-        <button
-          type="button"
-          className="px-5 py-3.5 border border-gray-200 text-gray-600 font-medium rounded-xl hover:bg-gray-50 transition-colors text-sm"
-        >
-          Cek impulsif
+          {saved ? <><CheckCircle size={16} /> Tersimpan!</> : 'Simpan'}
         </button>
       </div>
     </div>
@@ -238,7 +209,7 @@ function FormContent({
 /* =========================
    SUMMARY PANEL
 ========================= */
-function SummaryPanel({ totalIncome, totalExpense }) {
+function SummaryPanel({ todayTransactions, totalIncome, totalExpense }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
@@ -284,7 +255,7 @@ function SummaryPanel({ totalIncome, totalExpense }) {
         </div>
 
         <div className="space-y-3">
-          {TODAY_TRANSACTIONS.map(trx => (
+          {todayTransactions.map(trx => (
             <div
               key={trx.id}
               className="flex items-center justify-between"
@@ -354,17 +325,38 @@ function SummaryPanel({ totalIncome, totalExpense }) {
    MAIN PAGE
 ========================= */
 export default function AddTransactionPage() {
-  const [type, setType] = useState('expense')
-
-  const [selectedCategory, setSelectedCategory] =
-    useState('Makanan')
-
-  const [form, setForm] = useState({
+  const { transactions, addTransaction } = useTransactionContext()
+  const navigate = useNavigate()
+  const [type, setType]                 = useState('expense')
+  const [selectedCategory, setSelectedCategory] = useState('Makanan')
+  const [saved, setSaved]               = useState(false)
+  const [form, setForm]                 = useState({
     description: '',
     amount: '',
     date: new Date().toLocaleDateString('id-ID'),
     paymentMethod: 'Gopay/E-wallet',
   })
+
+  // Ambil transaksi hari ini dari Context
+  const todayLabel = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })
+  const TODAY_TRANSACTIONS = transactions.filter(t => t.date === todayLabel)
+
+  const handleSimpan = () => {
+    if (!form.description || !form.amount) return
+    addTransaction({
+      type,
+      description: form.description,
+      amount:      Number(form.amount),
+      category:    selectedCategory,
+      method:      form.paymentMethod,
+      date:        todayLabel,
+      isImpulsive: false,
+    })
+    setSaved(true)
+    setForm({ description: '', amount: '', date: new Date().toLocaleDateString('id-ID'), paymentMethod: 'Gopay/E-wallet' })
+    setSelectedCategory(type === 'expense' ? 'Makanan' : 'Gaji')
+    setTimeout(() => setSaved(false), 2000)
+  }
 
   const categories =
     type === 'expense'
@@ -393,13 +385,6 @@ export default function AddTransactionPage() {
               Input pemasukan & pengeluaran dengan mudah
             </p>
           </div>
-
-          <button
-            type="button"
-            className="w-10 h-10 rounded-xl border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:bg-gray-50 shadow-sm"
-          >
-            <Bell size={18} />
-          </button>
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_480px] gap-6">
@@ -411,9 +396,12 @@ export default function AddTransactionPage() {
             form={form}
             setForm={setForm}
             categories={categories}
+            onSimpan={handleSimpan}
+            saved={saved}
           />
 
           <SummaryPanel
+            todayTransactions={TODAY_TRANSACTIONS}
             totalIncome={totalIncome}
             totalExpense={totalExpense}
           />
@@ -465,14 +453,16 @@ export default function AddTransactionPage() {
 
         {/* Form */}
         <FormContent
-          type={type}
-          setType={setType}
-          selectedCategory={selectedCategory}
-          setSelectedCategory={setSelectedCategory}
-          form={form}
-          setForm={setForm}
-          categories={categories}
-        />
+            type={type}
+            setType={setType}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+            form={form}
+            setForm={setForm}
+            categories={categories}
+            onSimpan={handleSimpan}
+            saved={saved}
+          />
 
         {/* Transactions */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">

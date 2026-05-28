@@ -1,10 +1,12 @@
 // components/layout/Sidebar.jsx
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate, Link } from 'react-router-dom'
 import {
   LayoutDashboard, Plus, ClockIcon, Zap,
-  TrendingUp, Wallet, MessageSquare, Settings
+  TrendingUp, Wallet, MessageSquare, Settings, LogOut, Bell
 } from 'lucide-react'
 import { useAuthContext } from '../../context/AuthContext'
+import { useLogout } from '../../hooks/useAuth'
+import { useNotifications } from '../../context/NotificationContext'
 import fingoLogo from '../../assets/images/fingo-logo.png'
 
 const MENU_UTAMA = [
@@ -22,7 +24,9 @@ const ANALITIK = [
 ]
 
 export default function Sidebar() {
-  const { user } = useAuthContext();
+  const { user } = useAuthContext()
+  const { mutate: logout } = useLogout()
+  const { unreadCount } = useNotifications()
 
   const linkClass = ({ isActive }) =>
     `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
@@ -34,16 +38,29 @@ export default function Sidebar() {
   return (
     <aside className="w-56 shrink-0 h-screen sticky top-0 bg-white border-r border-gray-100 flex flex-col">
       {/* Logo */}
-      <div className="px-5 py-5 border-b border-gray-100">
+      {/* Logo */}
+      <div className="px-4 py-4 border-b border-gray-100">
         <div className="flex items-center gap-2.5">
-          <img src={fingoLogo} alt="Fingo" className="w-10 h-10 rounded-xl object-cover" />
-          <div>
+          <img src={fingoLogo} alt="Fingo" className="w-10 h-10 rounded-xl object-cover shrink-0" />
+          <div className="flex-1 min-w-0">
             <div className="font-black text-lg leading-none">
               <span className="text-gray-900">Fin</span>
               <span className="text-[#22c55e]">go</span>
             </div>
             <div className="text-[10px] text-gray-400 tracking-widest uppercase">Smart Finance App</div>
           </div>
+          <Link
+            to="/notifications"
+            className="relative w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors shrink-0"
+            title="Notifikasi"
+          >
+            <Bell size={18} className="text-gray-500" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 min-w-[15px] h-[15px] bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center px-0.5 border-2 border-white">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </Link>
         </div>
       </div>
 

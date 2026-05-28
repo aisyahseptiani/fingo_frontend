@@ -58,10 +58,6 @@ export default function DashboardPage() {
               {greeting()}, {user?.name?.split(' ')[0] ?? 'Aisyah'}
             </p>
           </div>
-          <Link to="/notifications"
-            className="w-10 h-10 rounded-xl border border-gray-200 bg-white flex items-center justify-center text-gray-500 hover:bg-gray-50 transition-colors shadow-sm">
-            <Bell size={18} />
-          </Link>
         </div>
 
         {/* 4 Stat Cards */}
