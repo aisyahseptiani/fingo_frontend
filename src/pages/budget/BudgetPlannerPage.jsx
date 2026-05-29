@@ -283,8 +283,12 @@ function ProgressView({ income, savedValues, onReset }) {
     <div className="px-4 py-4 lg:px-6 lg:py-6 space-y-4 pb-24 lg:pb-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl lg:text-2xl font-black text-gray-900">Budget Planner</h1>
-          <p className="text-gray-400 text-sm mt-0.5">Alokasi anggaran cerdas dengan rekomendasi 50/30/20</p>
+          <h1 className="text-xl lg:text-2xl font-black text-gray-900">
+            Budget Planner
+          </h1>
+          <p className="text-gray-400 text-sm mt-0.5">
+            Alokasi anggaran cerdas dengan rekomendasi 50/30/20
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={onReset}

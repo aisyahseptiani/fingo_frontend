@@ -64,10 +64,10 @@ export default function ImpulsiveDetectorPage() {
       {/* Header — responsive */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-900">
+          <h1 className="text-xl lg:text-2xl font-black text-gray-900">
             Impulsive Detector
           </h1>
-          <p className="text-gray-400 text-xs sm:text-sm lg:text-base mt-1">
+          <p className="text-gray-400 text-sm mt-0.5">
             Cek apakah pengeluaranmu termasuk impulsif dengan analisis AI
           </p>
         </div>

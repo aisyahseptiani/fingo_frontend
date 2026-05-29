@@ -99,12 +99,11 @@ function OnboardingForm({ onComplete }) {
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-9 h-9 rounded-xl bg-[#22c55e]/10 flex items-center justify-center shrink-0">
-          <TrendingUp size={18} className="text-[#22c55e]" />
-        </div>
         <div>
-          <h1 className="text-base font-black text-gray-900 leading-tight">Income Predictor</h1>
-          <p className="text-[11px] text-gray-400 mt-0.5 leading-snug">
+          <h1 className="text-xl lg:text-2xl font-black text-gray-900">
+            Income Predictor
+          </h1>
+          <p className="text-gray-400 text-sm mt-0.5">
             Masukkan data <strong className="text-gray-500">4 minggu terakhir</strong> untuk memulai
           </p>
         </div>
