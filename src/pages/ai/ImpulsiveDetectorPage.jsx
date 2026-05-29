@@ -14,7 +14,7 @@ const RISK_LEVEL = {
 
 export default function ImpulsiveDetectorPage() {
   const [form, setForm] = useState({ description: '', amount: '', category: '', reason: '' })
-  const [planned, setPlanned] = useState(null) // null | 'no' | 'yes'
+  const [planned, setPlanned] = useState(null)
   const [analyzed, setAnalyzed]   = useState(false)
   const [saved, setSaved]         = useState(false)
   const { addNotification }       = useNotifications()
@@ -26,7 +26,6 @@ export default function ImpulsiveDetectorPage() {
     if (!form.description || !form.amount) return
     setAnalyzed(true)
 
-    // Otomatis kirim hasil analisis ke notifikasi
     addNotification({
       id: `impulse_${form.description}_${form.amount}`,
       type: 'ai_impulse',
@@ -61,20 +60,24 @@ export default function ImpulsiveDetectorPage() {
   }
 
   return (
-    <div className="px-4 py-4 lg:px-6 lg:py-6 space-y-5">
-      {/* Header */}
+    <div className="px-4 py-5 lg:px-6 lg:py-6 space-y-6">
+      {/* Header — responsive */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-black text-gray-900">Implusive Detector</h1>
-          <p className="text-gray-400 text-sm mt-0.5">Cek apakah pengeluaranmu termasuk implusive dengan analisis AI</p>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-900">
+            Impulsive Detector
+          </h1>
+          <p className="text-gray-400 text-xs sm:text-sm lg:text-base mt-1">
+            Cek apakah pengeluaranmu termasuk impulsif dengan analisis AI
+          </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6">
 
         {/* Form kiri */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
-          <h2 className="font-bold text-gray-900 text-lg">Input Transaksi untuk di Analisis</h2>
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6 space-y-5">
+          <h2 className="font-bold text-gray-900 text-base sm:text-lg">Input Transaksi untuk di Analisis</h2>
 
           {/* Nama transaksi */}
           <div>
@@ -89,7 +92,7 @@ export default function ImpulsiveDetectorPage() {
           </div>
 
           {/* Jumlah + Kategori */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-sm text-gray-500 mb-1.5">Jumlah (Rp)</label>
               <input
@@ -105,10 +108,20 @@ export default function ImpulsiveDetectorPage() {
               <select
                 value={form.category}
                 onChange={e => setForm(p => ({ ...p, category: e.target.value }))}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#22c55e] focus:ring-2 focus:ring-[#22c55e]/10 bg-white"
+                className={`w-full px-4 py-3 rounded-xl border text-sm outline-none focus:border-[#22c55e] focus:ring-2 focus:ring-[#22c55e]/10 bg-white appearance-none cursor-pointer transition-colors ${
+                  form.category
+                    ? 'border-[#22c55e] bg-green-50 text-gray-900 font-medium'
+                    : 'border-gray-200 text-gray-400'
+                }`}
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 12px center',
+                  paddingRight: '2.5rem',
+                }}
               >
                 <option value="">Pilih kategori</option>
-                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
           </div>
@@ -131,7 +144,7 @@ export default function ImpulsiveDetectorPage() {
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setPlanned('no')}
-                className={`py-3 rounded-xl text-sm font-bold border transition-all ${
+                className={`py-3.5 rounded-xl text-sm font-bold border transition-all ${
                   planned === 'no'
                     ? 'bg-red-50 border-red-300 text-red-500'
                     : 'border-gray-200 text-gray-500 hover:border-red-200 hover:text-red-400'
@@ -141,7 +154,7 @@ export default function ImpulsiveDetectorPage() {
               </button>
               <button
                 onClick={() => setPlanned('yes')}
-                className={`py-3 rounded-xl text-sm font-bold border transition-all ${
+                className={`py-3.5 rounded-xl text-sm font-bold border transition-all ${
                   planned === 'yes'
                     ? 'bg-green-50 border-[#22c55e] text-[#22c55e]'
                     : 'border-gray-200 text-gray-500 hover:border-green-200 hover:text-green-500'
@@ -155,7 +168,7 @@ export default function ImpulsiveDetectorPage() {
           {/* Tombol analisis */}
           <button
             onClick={handleAnalyze}
-            className="w-full py-4 bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold rounded-xl transition-colors text-sm"
+            className="w-full py-4 bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold rounded-xl transition-colors text-sm sm:text-base"
           >
             Analisis Sekarang
           </button>
@@ -165,30 +178,30 @@ export default function ImpulsiveDetectorPage() {
         <div className="space-y-4">
 
           {/* Hasil analisis AI */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <h2 className="font-bold text-gray-900 mb-4">Hasil Analisis AI</h2>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+            <h2 className="font-bold text-gray-900 text-base sm:text-lg mb-4">Hasil Analisis AI</h2>
             <div className="flex items-center gap-4">
               {/* Donut score */}
-              <div className="relative shrink-0" style={{ width: 80, height: 80 }}>
-                <svg viewBox="0 0 36 36" className="w-20 h-20 -rotate-90">
+              <div className="relative shrink-0" style={{ width: 90, height: 90 }}>
+                <svg viewBox="0 0 36 36" className="w-[90px] h-[90px] -rotate-90">
                   <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f0f0f0" strokeWidth="3.5" />
                   <circle cx="18" cy="18" r="15.9" fill="none"
                     stroke={analyzed ? '#f59e0b' : '#e5e7eb'} strokeWidth="3.5"
                     strokeDasharray={`${analyzed ? 65 : 0} 100`} strokeLinecap="round" />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-lg font-black text-gray-900">{analyzed ? '65%' : '--'}</span>
+                  <span className="text-xl font-black text-gray-900">{analyzed ? '65%' : '--'}</span>
                 </div>
               </div>
               <div>
-                <p className="text-2xl font-black text-gray-900">
+                <p className="text-2xl sm:text-3xl font-black text-gray-900">
                   {analyzed ? '65%' : '--'}{' '}
-                  <span className="text-sm font-medium text-gray-400">Skor implusif</span>
+                  <span className="text-sm font-medium text-gray-400">Skor impulsif</span>
                 </p>
                 {analyzed && (
                   <>
                     <p className="text-yellow-500 font-bold text-sm mt-0.5">PERLU PERTIMBANGAN</p>
-                    <p className="text-xs text-gray-400 mt-1">Transaksi ini memiliki indikasi implusif yang cukup tinggi</p>
+                    <p className="text-xs text-gray-400 mt-1">Transaksi ini memiliki indikasi impulsif yang cukup tinggi</p>
                   </>
                 )}
                 {!analyzed && (
@@ -199,9 +212,9 @@ export default function ImpulsiveDetectorPage() {
           </div>
 
           {/* Faktor resiko */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Faktor Resiko</h2>
-            <div className="space-y-3">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+            <h2 className="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Faktor Resiko</h2>
+            <div className="space-y-3.5">
               {[
                 { label: 'Pembelian tidak terencana', level: 'Tinggi' },
                 { label: 'Dipicu media sosial', level: 'Sedang' },
@@ -210,7 +223,7 @@ export default function ImpulsiveDetectorPage() {
               ].map((r, i) => (
                 <div key={i} className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">{r.label}</span>
-                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${RISK_LEVEL[r.level]}`}>
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${RISK_LEVEL[r.level]}`}>
                     {r.level}
                   </span>
                 </div>
@@ -219,31 +232,31 @@ export default function ImpulsiveDetectorPage() {
           </div>
 
           {/* Saran AI */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-4 h-4 bg-yellow-400 rounded-sm" />
-              <span className="font-bold text-sm text-yellow-500 uppercase tracking-wide">Saran AI</span>
+              <div className="w-5 h-5 bg-yellow-400 rounded-sm" />
+              <span className="font-bold text-sm sm:text-base text-yellow-500 uppercase tracking-wide">Saran AI</span>
             </div>
             <p className="text-sm text-gray-600 leading-relaxed mb-4">
-              Pertimbangkan menunggu hingga sebelum membeli. Jika merasa perlu setelah 3 hari, pembelian ini kemungkinan bukan implusif.
+              Pertimbangkan menunggu hingga sebelum membeli. Jika merasa perlu setelah 3 hari, pembelian ini kemungkinan bukan impulsif.
               Saat ini sisa budget belanja kamu hanya <strong>Rp 150.000</strong>
             </p>
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setAnalyzed(false)}
-                className="py-3 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                className="py-3.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 Batal
               </button>
               {saved ? (
-                <div className="py-3 rounded-xl bg-green-50 border border-[#22c55e] text-[#22c55e] text-sm font-bold flex items-center justify-center gap-2">
+                <div className="py-3.5 rounded-xl bg-green-50 border border-[#22c55e] text-[#22c55e] text-sm font-bold flex items-center justify-center gap-2">
                   <CheckCircle size={15} /> Tersimpan!
                 </div>
               ) : (
                 <button
                   onClick={handleCatat}
                   disabled={isPending}
-                  className="py-3 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] disabled:opacity-60 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2"
+                  className="py-3.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] disabled:opacity-60 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2"
                 >
                   {isPending && (
                     <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -254,21 +267,21 @@ export default function ImpulsiveDetectorPage() {
             </div>
           </div>
 
-          {/* Riwayat implusif bulan ini */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Riwayat Implusif Bulan Ini</h2>
+          {/* Riwayat impulsif bulan ini */}
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+            <h2 className="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Riwayat Impulsif Bulan Ini</h2>
             <div className="grid grid-cols-3 gap-3 text-center">
-              <div>
-                <p className="text-3xl font-black text-red-500">3</p>
-                <p className="text-xs text-gray-400 mt-1">Implusif</p>
+              <div className="py-3">
+                <p className="text-3xl sm:text-4xl font-black text-red-500">3</p>
+                <p className="text-xs sm:text-sm text-gray-400 mt-1.5">Impulsif</p>
               </div>
-              <div>
-                <p className="text-3xl font-black text-yellow-500">5</p>
-                <p className="text-xs text-gray-400 mt-1">Perlu perhatian</p>
+              <div className="py-3">
+                <p className="text-3xl sm:text-4xl font-black text-yellow-500">5</p>
+                <p className="text-xs sm:text-sm text-gray-400 mt-1.5">Perlu perhatian</p>
               </div>
-              <div>
-                <p className="text-3xl font-black text-[#22c55e]">40</p>
-                <p className="text-xs text-gray-400 mt-1">Aman</p>
+              <div className="py-3">
+                <p className="text-3xl sm:text-4xl font-black text-[#22c55e]">40</p>
+                <p className="text-xs sm:text-sm text-gray-400 mt-1.5">Aman</p>
               </div>
             </div>
           </div>

@@ -13,7 +13,14 @@ const formatShort = (n) => {
   return `Rp ${formatRp(n)}`
 }
 
-const INCOME_SOURCES = ['Gojek', 'Grab', 'Freelance Design', 'Shopee', 'Gojek + Freelance', 'Lainnya']
+const SOURCE_OPTIONS = [
+  { value: 'Gojek',             label: 'Gojek',             color: '#16a34a' },
+  { value: 'Grab',              label: 'Grab',              color: '#0d9488' },
+  { value: 'Freelance Design',  label: 'Freelance Design',  color: '#2563eb' },
+  { value: 'Shopee',            label: 'Shopee',            color: '#ea580c' },
+  { value: 'Gojek + Freelance', label: 'Gojek + Freelance', color: '#7c3aed' },
+  { value: 'Lainnya',           label: 'Lainnya',           color: '#64748b' },
+]
 
 function predictNext4(weeklyData) {
   const n = weeklyData.length
@@ -35,6 +42,30 @@ const CustomTooltip = ({ active, payload, label }) => {
         Rp {formatRp(d.value)}
       </p>
       {isPred && <p className="text-gray-400 mt-0.5">Prediksi AI</p>}
+    </div>
+  )
+}
+
+// ── COLORED SELECT — teks berwarna, background tetap putih ───────────────────
+function SourceSelect({ value, onChange }) {
+  const selected = SOURCE_OPTIONS.find(s => s.value === value)
+
+  return (
+    <div className="relative w-full">
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="w-full pl-3 pr-8 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-[#22c55e] focus:ring-2 focus:ring-[#22c55e]/15 appearance-none cursor-pointer bg-white transition-colors"
+        style={{ color: selected ? selected.color : '#9ca3af', fontWeight: selected ? 600 : 400 }}
+      >
+        <option value="" style={{ color: '#9ca3af', fontWeight: 400 }}>Pilih sumber</option>
+        {SOURCE_OPTIONS.map(s => (
+          <option key={s.value} value={s.value} style={{ color: s.color, fontWeight: 600 }}>
+            {s.label}
+          </option>
+        ))}
+      </select>
+      <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▾</span>
     </div>
   )
 }
@@ -64,88 +95,90 @@ function OnboardingForm({ onComplete }) {
   const allFilled = weeks.every(w => w.amount && w.source)
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center p-4 lg:p-8">
-      <div className="w-full max-w-2xl">
+    <div className="w-full p-4 sm:p-5">
 
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl lg:text-3xl font-black text-gray-900">Mulai Income Predictor</h1>
-          <p className="text-gray-400 text-sm mt-2 max-w-md mx-auto leading-relaxed">
-            Masukkan pendapatan <strong className="text-gray-600">4 minggu terakhir</strong> sebagai
-            data awal. AI akan membangun model prediksi khusus untukmu.
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-9 h-9 rounded-xl bg-[#22c55e]/10 flex items-center justify-center shrink-0">
+          <TrendingUp size={18} className="text-[#22c55e]" />
+        </div>
+        <div>
+          <h1 className="text-base font-black text-gray-900 leading-tight">Income Predictor</h1>
+          <p className="text-[11px] text-gray-400 mt-0.5 leading-snug">
+            Masukkan data <strong className="text-gray-500">4 minggu terakhir</strong> untuk memulai
           </p>
         </div>
+      </div>
 
-        {/* Progress */}
-        <div className="flex items-center gap-2 mb-6">
-          {weeks.map((w, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1.5">
-              <div className={`h-1.5 w-full rounded-full transition-all duration-300
-                ${w.amount && w.source ? 'bg-[#22c55e]' : 'bg-gray-200'}`} />
-              <span className="text-[10px] text-gray-400 font-medium hidden sm:block">{w.label}</span>
-            </div>
-          ))}
-          <ChevronRight size={14} className="text-gray-300 shrink-0" />
-          <div className="flex-1 flex flex-col items-center gap-1.5">
-            <div className="h-1.5 w-full rounded-full bg-gray-100" />
-            <span className="text-[10px] text-gray-400 font-medium hidden sm:block">Prediksi AI</span>
+      {/* Progress bar */}
+      <div className="flex items-end gap-1.5 mb-4">
+        {weeks.map((w, i) => (
+          <div key={i} className="flex-1 flex flex-col items-start gap-1">
+            <span className="text-[9px] text-gray-400 font-medium leading-none hidden sm:block">{w.label}</span>
+            <div className={`h-1 w-full rounded-full transition-all duration-300
+              ${w.amount && w.source ? 'bg-[#22c55e]' : 'bg-gray-200'}`} />
           </div>
+        ))}
+        <div className="flex items-end pb-0 shrink-0">
+          <ChevronRight size={11} className="text-gray-300 mb-0.5" />
         </div>
+        <div className="flex-1 flex flex-col items-start gap-1">
+          <span className="text-[9px] text-gray-400 font-medium leading-none hidden sm:block">Prediksi</span>
+          <div className="h-1 w-full rounded-full bg-gray-100" />
+        </div>
+      </div>
 
-        {/* 4 form */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
-          <div className="px-5 py-4 border-b border-gray-100 bg-gray-50/50">
-            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Data Pendapatan Mingguan</p>
-          </div>
-          <div className="divide-y divide-gray-50">
-            {weeks.map((w, i) => (
-              <div key={i} className="px-5 py-4">
-                <div className="flex items-center gap-2.5 mb-3">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black shrink-0
-                    ${w.amount && w.source ? 'bg-[#22c55e] text-white' : 'bg-gray-100 text-gray-400'}`}>
-                    {w.amount && w.source ? <CheckCircle size={13} /> : i + 1}
-                  </div>
-                  <p className="text-sm font-bold text-gray-700">{w.label}</p>
+      {/* Form card */}
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden mb-3">
+        <div className="px-4 py-2 border-b border-gray-100 bg-gray-50/60">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Data Pendapatan Mingguan</p>
+        </div>
+        <div className="divide-y divide-gray-50">
+          {weeks.map((w, i) => (
+            <div key={i} className="px-4 py-2.5">
+              {/* Row label */}
+              <div className="flex items-center gap-2 mb-2">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shrink-0
+                  ${w.amount && w.source ? 'bg-[#22c55e] text-white' : 'bg-gray-100 text-gray-400'}`}>
+                  {w.amount && w.source ? <CheckCircle size={11} /> : i + 1}
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 ml-8">
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-semibold">Rp</span>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={w.amount ? formatRp(parseNum(w.amount)) : ''}
-                      onChange={e => updateWeek(i, 'amount', e.target.value)}
-                      placeholder="0"
-                      className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#22c55e] focus:ring-2 focus:ring-[#22c55e]/10 placeholder:text-gray-300"
-                    />
-                  </div>
-                  <select
-                    value={w.source}
-                    onChange={e => updateWeek(i, 'source', e.target.value)}
-                    className={`w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#22c55e] bg-white
-                      ${!w.source ? 'text-gray-300' : 'text-gray-800'}`}>
-                    <option value="">Pilih sumber pendapatan</option>
-                    {INCOME_SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
+                <p className="text-xs font-bold text-gray-600">{w.label}</p>
+              </div>
+
+              {/* Inputs — amount fixed width, source fills remaining */}
+              <div className="flex gap-2 ml-7">
+                <div className="relative w-40 shrink-0">
+                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-semibold select-none">Rp</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={w.amount ? formatRp(parseNum(w.amount)) : ''}
+                    onChange={e => updateWeek(i, 'amount', e.target.value)}
+                    placeholder="0"
+                    className="w-full pl-8 pr-2.5 py-2 rounded-lg border border-gray-200 text-xs outline-none focus:border-[#22c55e] focus:ring-2 focus:ring-[#22c55e]/10 placeholder:text-gray-300"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <SourceSelect value={w.source} onChange={val => updateWeek(i, 'source', val)} />
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-
-        {error && <p className="text-xs text-red-500 font-medium text-center mb-3">{error}</p>}
-
-        <button
-          onClick={handleSubmit}
-          disabled={!allFilled}
-          className="w-full py-3.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2
-            disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed
-            bg-[#22c55e] hover:bg-[#16a34a] text-white shadow-sm">
-          {allFilled ? <><Zap size={16} /> Buat Prediksi AI</> : 'Isi semua data untuk melanjutkan'}
-        </button>
-
-        <p className="text-center text-xs text-gray-400 mt-3">Data bisa diperbarui kapan saja</p>
       </div>
+
+      {error && <p className="text-xs text-red-500 font-medium mb-2">{error}</p>}
+
+      <button
+        onClick={handleSubmit}
+        disabled={!allFilled}
+        className="w-full py-2.5 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2
+          disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed
+          bg-[#22c55e] hover:bg-[#16a34a] text-white shadow-sm">
+        {allFilled ? <><Zap size={14} /> Buat Prediksi AI</> : 'Isi semua data untuk melanjutkan'}
+      </button>
+
+      <p className="text-[10px] text-gray-400 mt-2">Data bisa diperbarui kapan saja</p>
     </div>
   )
 }
@@ -184,7 +217,7 @@ function PredictorDashboard({ historyData, onAddWeek, onReset }) {
   }
 
   const tableRows = [...historyData].reverse().map((w, i, arr) => ({
-    period:    i === 0 ? 'Mg ini (Aktual)' : i === 1 ? 'Minggu lalu' : `${i} Minggu lalu`,
+    period:    i === 0 ? 'Minggu ini' : i === 1 ? 'Minggu lalu' : `${i} Minggu lalu`,
     amount:    w.amount,
     source:    w.source,
     highlight: i === 0,
@@ -193,19 +226,19 @@ function PredictorDashboard({ historyData, onAddWeek, onReset }) {
   }))
 
   return (
-    <div className="p-4 lg:p-6 space-y-5">
+    <div className="w-full p-4 lg:p-6 space-y-5">
 
       {/* HEADER */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-black text-gray-900">Income Predictor</h1>
-          <p className="text-gray-400 text-sm mt-0.5">Visualisasi historis dan prediksi pendapatan 4 minggu ke depan</p>
+          <h1 className="text-xl font-black text-gray-900">Income Predictor</h1>
+          <p className="text-gray-400 text-xs mt-0.5">Visualisasi historis dan prediksi pendapatan 4 minggu ke depan</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
             {[{ key: 'weekly', label: 'Mingguan' }, { key: 'monthly', label: 'Bulanan' }].map(t => (
               <button key={t.key} onClick={() => setPeriod(t.key)}
-                className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all
                   ${period === t.key ? 'bg-white text-[#22c55e] shadow-sm border border-[#22c55e]/30' : 'text-gray-500 hover:text-gray-700'}`}>
                 {t.label}
               </button>
@@ -213,44 +246,44 @@ function PredictorDashboard({ historyData, onAddWeek, onReset }) {
           </div>
           <button onClick={onReset}
             className="px-3 py-2 rounded-xl border border-gray-200 text-xs text-gray-400 hover:text-red-500 hover:border-red-200 transition-colors">
-            Reset Data
+            Reset
           </button>
         </div>
       </div>
 
       {/* STAT CARDS */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {[
-          { label: 'Rata-rata/Minggu',    value: formatShort(avg),      sub: `${historyData.length} minggu data`,                                                      icon: BarChart2,  iconBg: 'bg-green-100',  iconColor: 'text-[#22c55e]',  valueColor: 'text-[#22c55e]'  },
-          { label: 'Prediksi Minggu Ini', value: formatShort(predNext), sub: `${predNext >= avg ? '↑' : '↓'}${Math.abs(Math.round((predNext - avg) / avg * 100))}% dari rata-rata`, icon: Zap, iconBg: 'bg-yellow-100', iconColor: 'text-yellow-500', valueColor: 'text-yellow-500' },
-          { label: 'Prediksi Bulan Ini',  value: formatShort(totalPred),sub: '4 minggu ke depan',                                                                      icon: Target,     iconBg: 'bg-blue-100',   iconColor: 'text-blue-500',   valueColor: 'text-blue-500'   },
-          { label: 'Akurasi Model',       value: `${accuracy}%`,        sub: `Dari ${historyData.length} minggu data`,                                                  icon: TrendingUp, iconBg: 'bg-purple-100', iconColor: 'text-purple-500', valueColor: 'text-[#22c55e]'  },
+          { label: 'Rata-rata/Minggu',    value: formatShort(avg),      sub: `${historyData.length} minggu data`,                                                                      icon: BarChart2,  iconBg: 'bg-green-100',  iconColor: 'text-[#22c55e]',  valueColor: 'text-[#22c55e]'  },
+          { label: 'Prediksi Minggu Ini', value: formatShort(predNext), sub: `${predNext >= avg ? '↑' : '↓'}${Math.abs(Math.round((predNext - avg) / avg * 100))}% dari rata-rata`,    icon: Zap,        iconBg: 'bg-yellow-100', iconColor: 'text-yellow-500', valueColor: 'text-yellow-500' },
+          { label: 'Prediksi Bulan Ini',  value: formatShort(totalPred),sub: '4 minggu ke depan',                                                                                      icon: Target,     iconBg: 'bg-blue-100',   iconColor: 'text-blue-500',   valueColor: 'text-blue-500'   },
+          { label: 'Akurasi Model',       value: `${accuracy}%`,        sub: `Dari ${historyData.length} minggu data`,                                                                  icon: TrendingUp, iconBg: 'bg-purple-100', iconColor: 'text-purple-500', valueColor: 'text-[#22c55e]'  },
         ].map((s, i) => (
-          <div key={i} className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-start gap-3">
-            <div className={`w-9 h-9 rounded-xl ${s.iconBg} flex items-center justify-center shrink-0 mt-0.5`}>
-              <s.icon size={16} className={s.iconColor} />
+          <div key={i} className="bg-white rounded-xl border border-gray-100 shadow-sm p-3 flex items-start gap-2.5">
+            <div className={`w-8 h-8 rounded-xl ${s.iconBg} flex items-center justify-center shrink-0 mt-0.5`}>
+              <s.icon size={14} className={s.iconColor} />
             </div>
             <div className="min-w-0">
-              <p className="text-xs text-gray-400 font-medium leading-tight mb-1">{s.label}</p>
-              <p className={`text-lg lg:text-xl font-black ${s.valueColor}`}>{s.value}</p>
-              <p className="text-[11px] text-gray-400 mt-0.5 leading-tight">{s.sub}</p>
+              <p className="text-[10px] text-gray-400 font-medium leading-tight mb-0.5">{s.label}</p>
+              <p className={`text-base font-black ${s.valueColor}`}>{s.value}</p>
+              <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">{s.sub}</p>
             </div>
           </div>
         ))}
       </div>
 
       {/* CHART */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 lg:p-5">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
         <div className="flex flex-wrap justify-end gap-4 mb-3">
-          <div className="flex items-center gap-2"><div className="w-6 h-0.5 bg-[#22c55e]" /><span className="text-xs text-gray-500 font-medium">Historis</span></div>
-          <div className="flex items-center gap-2"><div className="w-6 border-t-2 border-dashed border-yellow-400" /><span className="text-xs text-gray-500 font-medium">Prediksi AI</span></div>
+          <div className="flex items-center gap-2"><div className="w-5 h-0.5 bg-[#22c55e]" /><span className="text-xs text-gray-500">Historis</span></div>
+          <div className="flex items-center gap-2"><div className="w-5 border-t-2 border-dashed border-yellow-400" /><span className="text-xs text-gray-500">Prediksi AI</span></div>
         </div>
-        <ResponsiveContainer width="100%" height={320}>
-          <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 10 }}>
+        <ResponsiveContainer width="100%" height={260}>
+          <LineChart data={chartData} margin={{ top: 8, right: 8, left: -20, bottom: 8 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" vertical={false} />
-            <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#9ca3af' }} axisLine={false} tickLine={false} dy={8} />
-            <YAxis tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false}
-              tickFormatter={v => `${(v / 1_000_000).toFixed(1)}jt`} width={40} domain={['auto', 'auto']} />
+            <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} dy={6} />
+            <YAxis tick={{ fontSize: 9, fill: '#9ca3af' }} axisLine={false} tickLine={false}
+              tickFormatter={v => `${(v / 1_000_000).toFixed(1)}jt`} width={36} domain={['auto', 'auto']} />
             <Tooltip content={<CustomTooltip />} />
             <ReferenceLine x="Mg ini" stroke="#d1d5db" strokeDasharray="5 3" strokeWidth={1.5} />
             <Line type="monotone" dataKey="value" stroke="#22c55e" strokeWidth={2.5}
@@ -258,53 +291,60 @@ function PredictorDashboard({ historyData, onAddWeek, onReset }) {
                 const { cx, cy, index } = props
                 const isLast = chartData[index]?.label === 'Mg ini'
                 return <circle key={`h-${index}`} cx={cx} cy={cy}
-                  r={isLast ? 6 : 3.5} fill={isLast ? '#22c55e' : '#fff'}
+                  r={isLast ? 5 : 3} fill={isLast ? '#22c55e' : '#fff'}
                   stroke="#22c55e" strokeWidth={isLast ? 3 : 2} />
               }}
-              activeDot={{ r: 5, fill: '#22c55e' }} connectNulls={false} />
+              activeDot={{ r: 4, fill: '#22c55e' }} connectNulls={false} />
             <Line type="monotone" dataKey="pred" stroke="#f59e0b" strokeWidth={2.5}
               strokeDasharray="6 4"
-              dot={{ r: 4, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 }}
-              activeDot={{ r: 5, fill: '#f59e0b' }} connectNulls={false} />
+              dot={{ r: 3.5, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 }}
+              activeDot={{ r: 4, fill: '#f59e0b' }} connectNulls={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
       {/* BOTTOM */}
-      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-5">
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_300px] gap-4">
 
         {/* TABLE */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100">
-            <h2 className="font-bold text-gray-900 text-sm lg:text-base">Rincian Data Historis</h2>
+          <div className="px-4 py-3 border-b border-gray-100">
+            <h2 className="font-bold text-gray-900 text-sm">Rincian Data Historis</h2>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[480px] text-sm">
+            <table className="w-full min-w-[420px] text-sm">
               <thead>
                 <tr className="border-b border-gray-100 bg-gray-50/60">
-                  {['Periode', 'Pendapatan', 'Sumber Utama', 'vs Minggu Lalu'].map((h, i) => (
-                    <th key={h} className={`py-3 px-5 text-xs font-bold text-gray-400 uppercase tracking-wider ${i >= 3 ? 'text-right' : 'text-left'}`}>{h}</th>
+                  {['Periode', 'Pendapatan', 'Sumber', 'vs Minggu Lalu'].map((h, i) => (
+                    <th key={h} className={`py-2.5 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-wider ${i >= 3 ? 'text-right' : 'text-left'}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {tableRows.map((row, i) => (
-                  <tr key={i} className="hover:bg-gray-50/60 transition-colors">
-                    <td className="px-5 py-3.5">
-                      <span className={`font-semibold text-sm ${row.highlight ? 'text-[#22c55e]' : 'text-gray-800'}`}>{row.period}</span>
-                    </td>
-                    <td className="px-5 py-3.5 font-semibold text-gray-800">Rp {formatRp(row.amount)}</td>
-                    <td className="px-5 py-3.5 text-gray-500 text-sm">{row.source}</td>
-                    <td className="px-5 py-3.5 text-right">
-                      {row.delta === null ? <span className="text-xs text-gray-300">—</span> : (
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold
-                          ${row.delta > 0 ? 'bg-green-100 text-green-700' : row.delta < 0 ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-500'}`}>
-                          {row.delta > 0 ? '+' : ''}{row.delta}%
+                {tableRows.map((row, i) => {
+                  const src = SOURCE_OPTIONS.find(s => s.value === row.source)
+                  return (
+                    <tr key={i} className="hover:bg-gray-50/60 transition-colors">
+                      <td className="px-4 py-3">
+                        <span className={`font-semibold text-xs ${row.highlight ? 'text-[#22c55e]' : 'text-gray-800'}`}>{row.period}</span>
+                      </td>
+                      <td className="px-4 py-3 font-semibold text-xs text-gray-800">Rp {formatRp(row.amount)}</td>
+                      <td className="px-4 py-3">
+                        <span className="text-xs font-semibold" style={{ color: src ? src.color : '#6b7280' }}>
+                          {row.source}
                         </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {row.delta === null ? <span className="text-xs text-gray-300">—</span> : (
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold
+                            ${row.delta > 0 ? 'bg-green-100 text-green-700' : row.delta < 0 ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-500'}`}>
+                            {row.delta > 0 ? '+' : ''}{row.delta}%
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -313,47 +353,42 @@ function PredictorDashboard({ historyData, onAddWeek, onReset }) {
         {/* RIGHT */}
         <div className="space-y-4">
           {/* Prediksi */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <p className="text-xs font-bold text-yellow-500 uppercase tracking-widest mb-4">Prediksi 4 Minggu</p>
-            <div className="space-y-2">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+            <p className="text-[10px] font-bold text-yellow-500 uppercase tracking-widest mb-3">Prediksi 4 Minggu</p>
+            <div className="space-y-1.5">
               {predictions.map((v, i) => (
-                <div key={i} className="flex items-center justify-between py-1.5">
-                  <span className="text-sm text-gray-600">{i === 0 ? 'Minggu depan (+1)' : `+${i + 1} minggu`}</span>
-                  <span className="text-sm font-black text-yellow-500">{formatShort(v)}</span>
+                <div key={i} className="flex items-center justify-between py-1">
+                  <span className="text-xs text-gray-600">{i === 0 ? 'Minggu depan (+1)' : `+${i + 1} minggu`}</span>
+                  <span className="text-xs font-black text-yellow-500">{formatShort(v)}</span>
                 </div>
               ))}
             </div>
-            <div className="border-t border-gray-100 mt-3 pt-3 flex items-center justify-between">
-              <span className="text-sm text-gray-500">Total 4 minggu</span>
-              <span className="text-sm font-black text-gray-900">{formatShort(totalPred)}</span>
+            <div className="border-t border-gray-100 mt-2.5 pt-2.5 flex items-center justify-between">
+              <span className="text-xs text-gray-500">Total 4 minggu</span>
+              <span className="text-xs font-black text-gray-900">{formatShort(totalPred)}</span>
             </div>
           </div>
 
           {/* Tambah minggu */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <p className="text-xs font-bold text-[#22c55e] uppercase tracking-widest mb-1">Tambah Minggu Ini</p>
-            <p className="text-[11px] text-gray-400 mb-4">Data baru akan memperbarui grafik & prediksi</p>
-            <div className="space-y-3">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+            <p className="text-[10px] font-bold text-[#22c55e] uppercase tracking-widest mb-0.5">Tambah Minggu Ini</p>
+            <p className="text-[10px] text-gray-400 mb-3">Data baru memperbarui grafik & prediksi</p>
+            <div className="space-y-2.5">
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-semibold">Rp</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-semibold">Rp</span>
                 <input type="text" inputMode="numeric" placeholder="Jumlah pendapatan"
                   value={newIncome ? formatRp(parseNum(newIncome)) : ''}
                   onChange={e => setNewIncome(e.target.value)}
-                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#22c55e] focus:ring-2 focus:ring-[#22c55e]/10 placeholder:text-gray-300" />
+                  className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 text-xs outline-none focus:border-[#22c55e] focus:ring-2 focus:ring-[#22c55e]/10 placeholder:text-gray-300" />
               </div>
-              <select value={newSource} onChange={e => setNewSource(e.target.value)}
-                className={`w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#22c55e] bg-white
-                  ${!newSource ? 'text-gray-300' : 'text-gray-800'}`}>
-                <option value="">Pilih sumber pendapatan</option>
-                {INCOME_SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
+              <SourceSelect value={newSource} onChange={setNewSource} />
               <button onClick={handleAdd}
                 disabled={!newIncome || !newSource}
-                className={`w-full py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2
+                className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2
                   ${saved
                     ? 'bg-green-50 border border-[#22c55e] text-[#22c55e]'
                     : 'bg-[#22c55e] hover:bg-[#16a34a] text-white disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed'}`}>
-                {saved ? <><CheckCircle size={15} /> Tersimpan!</> : <><Plus size={15} /> Tambah & Perbarui Prediksi</>}
+                {saved ? <><CheckCircle size={13} /> Tersimpan!</> : <><Plus size={13} /> Tambah & Perbarui Prediksi</>}
               </button>
             </div>
           </div>
