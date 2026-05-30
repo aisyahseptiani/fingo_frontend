@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useNotifications } from '../../context/NotificationContext'
-import { useTransactionContext } from '../../context/TransactionContext'
+import { useGetTransactions, useAddTransaction } from '../../hooks/useTransactions'
 import { Bell, CheckCircle } from 'lucide-react'
 
 const CATEGORIES = ['Makanan', 'Transportasi', 'Hiburan', 'Belanja', 'Pendidikan', 'Kesehatan', 'Tagihan', 'Lain-lain']
@@ -18,45 +18,95 @@ export default function ImpulsiveDetectorPage() {
   const [analyzed, setAnalyzed]   = useState(false)
   const [saved, setSaved]         = useState(false)
   const { addNotification }       = useNotifications()
-  const { addTransaction } = useTransactionContext()
-  const [isPending, setIsPending] = useState(false)
+  
+  const { data: rawTransactions = [] } = useGetTransactions()
+  const { mutate: addTransaction, isPending } = useAddTransaction()
   const navigate                  = useNavigate()
+
+  // Analisis bulan ini
+  const now = new Date()
+  const currentMonth = now.getMonth()
+  const currentYear = now.getFullYear()
+
+  let totalExpenseThisMonth = 0
+  let impulsiveCount = 0
+  let safeCount = 0
+
+  let totalIncomeAllTime = 0
+  let totalExpenseAllTime = 0
+
+  rawTransactions.forEach(t => {
+    if (t.type === 'INCOME') totalIncomeAllTime += t.amount
+    else if (t.type === 'EXPENSE') totalExpenseAllTime += t.amount
+
+    const d = new Date(t.date)
+    if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+      if (t.type === 'EXPENSE') {
+        totalExpenseThisMonth += t.amount
+        if (['Hiburan', 'Belanja', 'Lain-lain'].includes(t.category)) {
+          impulsiveCount++
+        } else {
+          safeCount++
+        }
+      }
+    }
+  })
+
+  // Limit dari saldo tersedia (total income - total expense)
+  const sisaBudget = Math.max(totalIncomeAllTime - totalExpenseAllTime, 0)
+  const sisaBudgetStr = `Rp ${sisaBudget.toLocaleString('id-ID')}`
 
   const handleAnalyze = () => {
     if (!form.description || !form.amount) return
     setAnalyzed(true)
 
+    // Logika skor impulsif sederhana
+    let score = 30
+    if (planned === 'no') score += 40
+    if (['Hiburan', 'Belanja'].includes(form.category)) score += 15
+    if (Number(form.amount) > sisaBudget) score += 20
+    score = Math.min(score, 95)
+
     addNotification({
       id: `impulse_${form.description}_${form.amount}`,
       type: 'ai_impulse',
       title: `Transaksi "${form.description}" terdeteksi impulsif`,
-      message: `Skor impulsif 65% — Pertimbangkan menunggu 3 hari sebelum membeli. Sisa budget belanjamu hanya Rp 150.000.`,
+      message: `Skor impulsif ${score}% — Pertimbangkan menunggu 3 hari sebelum membeli. Sisa budget bulan ini ${sisaBudgetStr}.`,
       source: 'Impulsive Detector',
     })
   }
 
   const handleCatat = () => {
-    setIsPending(true)
     addTransaction({
-      type:        'expense',
+      type:        'EXPENSE',
       description: form.description,
       amount:      Number(form.amount),
       category:    form.category || 'Lain-lain',
       method:      'Tunai',
-      isImpulsive: planned === 'no',
+      date:        new Date().toISOString().split('T')[0],
+      // isImpulsive: planned === 'no', // kalau ada field di backend
+    }, {
+      onSuccess: () => {
+        setSaved(true)
+        addNotification({
+          id:      `impulse_saved_${Date.now()}`,
+          type:    'ai_impulse',
+          title:   `Transaksi "${form.description}" berhasil dicatat`,
+          message: `Rp ${Number(form.amount).toLocaleString('id-ID')} telah ditambahkan ke riwayat transaksi.`,
+          source:  'Impulsive Detector',
+        })
+        setTimeout(() => navigate('/transactions'), 1500)
+      }
     })
-    setTimeout(() => {
-      setIsPending(false)
-      setSaved(true)
-      addNotification({
-        id:      `impulse_saved_${Date.now()}`,
-        type:    'ai_impulse',
-        title:   `Transaksi "${form.description}" berhasil dicatat`,
-        message: `Rp ${Number(form.amount).toLocaleString('id-ID')} telah ditambahkan ke riwayat transaksi.`,
-        source:  'Impulsive Detector',
-      })
-      setTimeout(() => navigate('/transactions'), 1500)
-    }, 800)
+  }
+
+  let scoreDisplay = 0
+  if (analyzed) {
+    let s = 30
+    if (planned === 'no') s += 40
+    if (['Hiburan', 'Belanja'].includes(form.category)) s += 15
+    if (Number(form.amount) > sisaBudget) s += 20
+    scoreDisplay = Math.min(s, 95)
   }
 
   return (
@@ -186,22 +236,24 @@ export default function ImpulsiveDetectorPage() {
                 <svg viewBox="0 0 36 36" className="w-[90px] h-[90px] -rotate-90">
                   <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f0f0f0" strokeWidth="3.5" />
                   <circle cx="18" cy="18" r="15.9" fill="none"
-                    stroke={analyzed ? '#f59e0b' : '#e5e7eb'} strokeWidth="3.5"
-                    strokeDasharray={`${analyzed ? 65 : 0} 100`} strokeLinecap="round" />
+                    stroke={analyzed ? (scoreDisplay > 70 ? '#ef4444' : '#f59e0b') : '#e5e7eb'} strokeWidth="3.5"
+                    strokeDasharray={`${analyzed ? scoreDisplay : 0} 100`} strokeLinecap="round" />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xl font-black text-gray-900">{analyzed ? '65%' : '--'}</span>
+                  <span className="text-xl font-black text-gray-900">{analyzed ? `${scoreDisplay}%` : '--'}</span>
                 </div>
               </div>
               <div>
                 <p className="text-2xl sm:text-3xl font-black text-gray-900">
-                  {analyzed ? '65%' : '--'}{' '}
+                  {analyzed ? `${scoreDisplay}%` : '--'}{' '}
                   <span className="text-sm font-medium text-gray-400">Skor impulsif</span>
                 </p>
                 {analyzed && (
                   <>
-                    <p className="text-yellow-500 font-bold text-sm mt-0.5">PERLU PERTIMBANGAN</p>
-                    <p className="text-xs text-gray-400 mt-1">Transaksi ini memiliki indikasi impulsif yang cukup tinggi</p>
+                    <p className={`${scoreDisplay > 70 ? 'text-red-500' : 'text-yellow-500'} font-bold text-sm mt-0.5`}>
+                      {scoreDisplay > 70 ? 'SANGAT IMPULSIF' : 'PERLU PERTIMBANGAN'}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">Transaksi ini memiliki indikasi impulsif yang {scoreDisplay > 70 ? 'tinggi' : 'cukup tinggi'}</p>
                   </>
                 )}
                 {!analyzed && (
@@ -216,10 +268,10 @@ export default function ImpulsiveDetectorPage() {
             <h2 className="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Faktor Resiko</h2>
             <div className="space-y-3.5">
               {[
-                { label: 'Pembelian tidak terencana', level: 'Tinggi' },
-                { label: 'Dipicu media sosial', level: 'Sedang' },
-                { label: 'Jumlah vs budget tersedia', level: 'Sedang' },
-                { label: 'Urgensi kebutuhan', level: 'Rendah' },
+                { label: 'Pembelian tidak terencana', level: planned === 'no' ? 'Tinggi' : 'Rendah' },
+                { label: 'Kategori Belanja/Hiburan', level: ['Hiburan', 'Belanja'].includes(form.category) ? 'Tinggi' : 'Rendah' },
+                { label: 'Jumlah vs sisa budget', level: Number(form.amount) > sisaBudget ? 'Tinggi' : 'Rendah' },
+                { label: 'Urgensi kebutuhan', level: 'Sedang' },
               ].map((r, i) => (
                 <div key={i} className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">{r.label}</span>
@@ -238,8 +290,8 @@ export default function ImpulsiveDetectorPage() {
               <span className="font-bold text-sm sm:text-base text-yellow-500 uppercase tracking-wide">Saran AI</span>
             </div>
             <p className="text-sm text-gray-600 leading-relaxed mb-4">
-              Pertimbangkan menunggu hingga sebelum membeli. Jika merasa perlu setelah 3 hari, pembelian ini kemungkinan bukan impulsif.
-              Saat ini sisa budget belanja kamu hanya <strong>Rp 150.000</strong>
+              Pertimbangkan menunggu hingga 3 hari sebelum membeli. Jika merasa perlu setelah 3 hari, pembelian ini kemungkinan bukan impulsif.
+              Saat ini sisa budget belanja kamu hanya <strong>{sisaBudgetStr}</strong>
             </p>
             <div className="grid grid-cols-2 gap-3">
               <button
@@ -255,7 +307,7 @@ export default function ImpulsiveDetectorPage() {
               ) : (
                 <button
                   onClick={handleCatat}
-                  disabled={isPending}
+                  disabled={isPending || !analyzed}
                   className="py-3.5 rounded-xl bg-[#22c55e] hover:bg-[#16a34a] disabled:opacity-60 text-white text-sm font-bold transition-colors flex items-center justify-center gap-2"
                 >
                   {isPending && (
@@ -272,15 +324,15 @@ export default function ImpulsiveDetectorPage() {
             <h2 className="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Riwayat Impulsif Bulan Ini</h2>
             <div className="grid grid-cols-3 gap-3 text-center">
               <div className="py-3">
-                <p className="text-3xl sm:text-4xl font-black text-red-500">3</p>
+                <p className="text-3xl sm:text-4xl font-black text-red-500">{impulsiveCount}</p>
                 <p className="text-xs sm:text-sm text-gray-400 mt-1.5">Impulsif</p>
               </div>
               <div className="py-3">
-                <p className="text-3xl sm:text-4xl font-black text-yellow-500">5</p>
+                <p className="text-3xl sm:text-4xl font-black text-yellow-500">{Math.floor(impulsiveCount / 2)}</p>
                 <p className="text-xs sm:text-sm text-gray-400 mt-1.5">Perlu perhatian</p>
               </div>
               <div className="py-3">
-                <p className="text-3xl sm:text-4xl font-black text-[#22c55e]">40</p>
+                <p className="text-3xl sm:text-4xl font-black text-[#22c55e]">{safeCount}</p>
                 <p className="text-xs sm:text-sm text-gray-400 mt-1.5">Aman</p>
               </div>
             </div>

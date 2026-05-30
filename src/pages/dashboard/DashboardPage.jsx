@@ -55,7 +55,7 @@ export default function DashboardPage() {
           <div>
             <h1 className="text-2xl font-black text-gray-900">Dashboard</h1>
             <p className="text-gray-400 text-sm mt-0.5">
-              {greeting()}, {user?.name?.split(' ')[0] ?? 'Aisyah'}
+              {greeting()}, {user?.name?.split(' ')[0] ?? 'Pengguna'}
             </p>
           </div>
         </div>
@@ -64,16 +64,16 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           <StatCard title="Saldo Tersedia"
             value={isLoading ? '...' : formatRupiah(data?.balance)}
-            subtitle="Bulan April 2026" subtitleColor="text-[#22c55e]" borderColor="border-l-[#22c55e]" />
+            subtitle={data?.monthLabel || "Bulan ini"} subtitleColor="text-[#22c55e]" borderColor="border-l-[#22c55e]" />
           <StatCard title="Pemasukan Bulan ini"
             value={isLoading ? '...' : formatRupiah(data?.income)}
-            subtitle="+12% dari bulan lalu" subtitleColor="text-blue-500" borderColor="border-l-blue-500" />
+            subtitle={data?.incomeDiffLabel || ""} subtitleColor="text-blue-500" borderColor="border-l-blue-500" />
           <StatCard title="Pengeluaran Bulan ini"
             value={isLoading ? '...' : formatRupiah(data?.expense)}
-            subtitle="68% budget terpakai" subtitleColor="text-red-500" borderColor="border-l-red-500" />
+            subtitle={data?.budgetUsedLabel || ""} subtitleColor="text-red-500" borderColor="border-l-red-500" />
           <StatCard title="Transaksi Implusif"
-            value={isLoading ? '...' : `${data?.impulsiveCount ?? 3}x`}
-            subtitle="↑ 1 dari bulan lalu" subtitleColor="text-amber-500" borderColor="border-l-amber-500" />
+            value={isLoading ? '...' : `${data?.impulsiveCount ?? 0}x`}
+            subtitle={data?.impulsiveDiffLabel || ""} subtitleColor="text-amber-500" borderColor="border-l-amber-500" />
         </div>
 
         {/* Baris tengah */}

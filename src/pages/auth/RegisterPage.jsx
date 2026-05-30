@@ -42,7 +42,7 @@ export default function RegisterPage() {
 
       {isError && (
         <div className="mb-5 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
-          {error?.response?.data?.message || 'Pendaftaran gagal. Coba lagi.'}
+          {error?.message || 'Pendaftaran gagal. Coba lagi.'}
         </div>
       )}
 

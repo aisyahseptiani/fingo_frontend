@@ -1,38 +1,99 @@
-// hooks/useDashboard.js
 import { useQuery } from '@tanstack/react-query'
-
-const DUMMY = {
-  balance: 2450000,
-  income: 4200000,
-  expense: 1750000,
-  impulsiveCount: 3,
-  incomePrediction: 1100000,
-  recentTransactions: [
-    { id: 1, description: 'Beli sayuran',      category: 'Makanan',      type: 'expense', amount: 203000, date: '2026-04-22' },
-    { id: 2, description: 'Grab',               category: 'Transportasi', type: 'expense', amount: 15000,  date: '2026-04-21' },
-    { id: 3, description: 'Freelance Project',  category: 'Pemasukan',    type: 'income',  amount: 800000, date: '2026-04-20' },
-    { id: 4, description: 'Makan siang',        category: 'Makanan',      type: 'expense', amount: 35000,  date: '2026-04-19' },
-    { id: 5, description: 'Netflix subcription',category: 'Hiburan',      type: 'expense', amount: 54000,  date: '2026-04-18' },
-    { id: 6, description: 'Transfer Gojek',     category: 'Pemasukan',    type: 'income',  amount: 1100000,date: '2026-04-18' },
-  ],
-  expenseByCategory: [
-    { category: 'Makanan',      amount: 700000,  percent: 40 },
-    { category: 'Transportasi', amount: 350000,  percent: 20 },
-    { category: 'Hiburan',      amount: 227500,  percent: 13 },
-    { category: 'Lainnya',      amount: 472500,  percent: 27 },
-  ],
-  weeklyChart: [
-    { week: 'Mg 1', income: 2000000, expense: 800000  },
-    { week: 'Mg 2', income: 1500000, expense: 600000  },
-    { week: 'Mg 3', income: 3000000, expense: 1200000 },
-    { week: 'Mg 4', income: 800000,  expense: 400000  },
-    { week: 'Pred.', income: 1100000, expense: 500000 },
-  ],
-}
+import api from '../services/api'
 
 export function useDashboard() {
   return useQuery({
     queryKey: ['dashboard'],
-    queryFn: () => Promise.resolve(DUMMY),
+    queryFn: async () => {
+      const { data: transactions } = await api.get('/transactions')
+      
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      const previousMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+      const previousMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
+      let income = 0;
+      let expense = 0;
+      let prevIncome = 0;
+      let prevExpense = 0;
+      let impulsiveCount = 0;
+      let prevImpulsiveCount = 0;
+      const categoryMap = {};
+
+      transactions.forEach(t => {
+        const d = new Date(t.date);
+        const tMonth = d.getMonth();
+        const tYear = d.getFullYear();
+
+        if (tYear === currentYear && tMonth === currentMonth) {
+          if (t.type === 'INCOME') income += t.amount;
+          else if (t.type === 'EXPENSE') {
+            expense += t.amount;
+            if (!categoryMap[t.category]) categoryMap[t.category] = 0;
+            categoryMap[t.category] += t.amount;
+            
+            if (['Hiburan', 'Belanja', 'Lain-lain'].includes(t.category)) {
+              impulsiveCount++;
+            }
+          }
+        } else if (tYear === previousMonthYear && tMonth === previousMonth) {
+          if (t.type === 'INCOME') prevIncome += t.amount;
+          else if (t.type === 'EXPENSE') {
+            prevExpense += t.amount;
+            if (['Hiburan', 'Belanja', 'Lain-lain'].includes(t.category)) {
+              prevImpulsiveCount++;
+            }
+          }
+        }
+      });
+
+      const balance = income - expense;
+      const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+      const monthLabel = `Bulan ${monthNames[currentMonth]} ${currentYear}`;
+      
+      const incomeDiff = prevIncome > 0 ? Math.round(((income - prevIncome) / prevIncome) * 100) : (income > 0 ? 100 : 0);
+      const incomeDiffLabel = incomeDiff >= 0 ? `+${incomeDiff}% dari bulan lalu` : `${incomeDiff}% dari bulan lalu`;
+
+      const defaultBudget = 5000000;
+      const budgetUsed = Math.min(Math.round((expense / defaultBudget) * 100), 100);
+      const budgetUsedLabel = `${budgetUsed}% budget terpakai`;
+
+      const impulsiveDiff = impulsiveCount - prevImpulsiveCount;
+      const impulsiveDiffLabel = impulsiveDiff >= 0 ? `↑ ${impulsiveDiff} dari bulan lalu` : `↓ ${Math.abs(impulsiveDiff)} dari bulan lalu`;
+      
+      const expenseByCategory = Object.keys(categoryMap).map(category => ({
+        category,
+        amount: categoryMap[category],
+        percent: expense > 0 ? Math.round((categoryMap[category] / expense) * 100) : 0
+      })).sort((a, b) => b.amount - a.amount);
+
+      return {
+        balance,
+        income,
+        expense,
+        monthLabel,
+        incomeDiffLabel,
+        budgetUsedLabel,
+        impulsiveDiffLabel,
+        impulsiveCount,
+        recentTransactions: transactions.slice(0, 6).map(t => ({
+          id: t.id,
+          description: t.note || t.category,
+          category: t.category,
+          type: t.type.toLowerCase(),
+          amount: t.amount,
+          date: t.date
+        })),
+        expenseByCategory,
+        incomePrediction: income > 0 ? income + 500000 : 1000000,
+        weeklyChart: [
+          { week: 'Mg 1', income: income * 0.2, expense: expense * 0.1  },
+          { week: 'Mg 2', income: income * 0.3, expense: expense * 0.4  },
+          { week: 'Mg 3', income: income * 0.1, expense: expense * 0.2 },
+          { week: 'Mg 4', income: income * 0.4, expense: expense * 0.3  },
+        ],
+      }
+    },
   })
 }

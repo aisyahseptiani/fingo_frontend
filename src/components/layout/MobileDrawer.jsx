@@ -123,15 +123,19 @@ export default function MobileDrawer({ isOpen, onClose }) {
               ${isActive ? 'bg-[#22c55e]/10' : 'hover:bg-gray-100'}`
             }
           >
-            <div className="w-9 h-9 rounded-full bg-[#22c55e] flex items-center justify-center text-white font-bold text-sm shrink-0">
-              {user?.name?.charAt(0).toUpperCase() ?? 'A'}
-            </div>
+            {user?.image ? (
+              <img src={user.image} alt={user?.name || 'Avatar'} className="w-9 h-9 rounded-full object-cover shrink-0" />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-[#22c55e] flex items-center justify-center text-white font-bold text-sm shrink-0">
+                {user?.name?.charAt(0).toUpperCase() ?? 'U'}
+              </div>
+            )}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-gray-900 truncate">
                 {user?.name ?? 'Pengguna'}
               </p>
               <p className="text-xs text-gray-400 truncate">
-                {user?.jobType ?? 'Gig Worker'}
+                {user?.email ?? 'Tidak ada email'}
               </p>
             </div>
           </NavLink>

@@ -3,7 +3,7 @@ import {
   Search, ChevronLeft, ChevronRight, Pencil, Trash2,
   TrendingUp, TrendingDown, Wallet, X, Check, AlertTriangle,
 } from 'lucide-react'
-import { useTransactionContext } from '../../context/TransactionContext'
+import { useGetTransactions, useUpdateTransaction, useDeleteTransaction } from '../../hooks/useTransactions'
 
 const FILTERS = ['Semua', 'Pemasukan', 'Pengeluaran', 'Makanan', 'Transport', 'Hiburan', 'Tagihan', 'Kesehatan', 'Pendidikan', 'Lainnya', 'Implusif']
 
@@ -189,7 +189,21 @@ function DeleteModal({ trx, onConfirm, onClose }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function TransactionHistoryPage() {
-  const { transactions, editTransaction, deleteTransaction } = useTransactionContext()
+  const { data: rawTransactions = [] } = useGetTransactions()
+  const { mutate: updateTrx } = useUpdateTransaction()
+  const { mutate: deleteTrxMutation } = useDeleteTransaction()
+
+  // Format transaksi agar sesuai dengan UI yang ada
+  const transactions = rawTransactions.map(t => ({
+    id: t.id,
+    description: t.note || t.category,
+    amount: t.amount,
+    category: t.category,
+    type: t.type.toLowerCase(),
+    date: new Date(t.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+    method: 'Transfer', // Default method for now
+    isImpulsive: false
+  }))
 
   const [search, setSearch]           = useState('')
   const [activeFilter, setActiveFilter] = useState('Semua')
@@ -492,14 +506,20 @@ export default function TransactionHistoryPage() {
       {editTrx && (
         <EditModal
           trx={editTrx}
-          onSave={(updated) => editTransaction(editTrx.id, updated)}
+          onSave={(updated) => updateTrx({
+            id: editTrx.id,
+            amount: updated.amount,
+            type: updated.type.toUpperCase(),
+            category: updated.category,
+            description: updated.description
+          })}
           onClose={() => setEditTrx(null)}
         />
       )}
       {deleteTrx && (
         <DeleteModal
           trx={deleteTrx}
-          onConfirm={deleteTransaction}
+          onConfirm={() => deleteTrxMutation(deleteTrx.id)}
           onClose={() => setDeleteTrx(null)}
         />
       )}

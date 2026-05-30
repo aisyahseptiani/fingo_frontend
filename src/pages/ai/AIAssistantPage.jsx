@@ -2,17 +2,12 @@ import { useState, useRef, useEffect } from 'react'
 import { Send, Mic } from 'lucide-react'
 import fingoLogo from '../../assets/images/fingo-logo.png'
 
+import { useAuthContext } from '../../context/AuthContext'
+
 const QUICK_PROMPTS = [
   'Ringkasan keuanganku', 'Tips hemat bulan ini',
   'Tip nabung gig worker', 'Analisis pengeluaran',
   'Rencana darurat', 'Cek kesehatan keuangan',
-]
-
-const INITIAL_MESSAGES = [
-  {
-    id: 1, role: 'ai', time: '09:30',
-    text: 'Halo Aisyah! Aku Fingo AI, asisten keuangan pribadimu. Aku terhubung dengan data keuanganmu dan siap membantu analisis, memberikan saran, dan menjawab seputar keuangan.\n\nBerdasarkan data terbaru, saldo kamu saat ini **Rp 2.45 juta** dengan pengeluaran bulan ini **Rp 1.75 juta**. Ada yang bisa aku bantu?',
-  },
 ]
 
 function formatMessage(text) {
@@ -29,6 +24,15 @@ function formatMessage(text) {
 }
 
 export default function AIAssistantPage() {
+  const { user } = useAuthContext()
+  
+  const INITIAL_MESSAGES = [
+    {
+      id: 1, role: 'ai', time: '09:30',
+      text: `Halo ${user?.name?.split(' ')[0] ?? 'Pengguna'}! Aku Fingo AI, asisten keuangan pribadimu. Aku terhubung dengan data keuanganmu dan siap membantu analisis, memberikan saran, dan menjawab seputar keuangan.\n\nBerdasarkan data terbaru, saldo kamu saat ini **Rp 2.45 juta** dengan pengeluaran bulan ini **Rp 1.75 juta**. Ada yang bisa aku bantu?`,
+    },
+  ]
+
   const [messages, setMessages] = useState(INITIAL_MESSAGES)
   const [input, setInput]       = useState('')
   const [isTyping, setIsTyping] = useState(false)

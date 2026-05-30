@@ -1,28 +1,22 @@
 // context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from 'react'
-import { getStoredUser, signOut } from '../lib/auth-client'
+import { useSession, signOut } from '../lib/auth-client'
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => getStoredUser())
-  const [isLoading, setIsLoading] = useState(false)
-
-  useEffect(() => {
-    const handler = () => {
-      setUser(getStoredUser())
-    }
-    window.addEventListener('mock_auth_change', handler)
-    return () => window.removeEventListener('mock_auth_change', handler)
-  }, [])
+  const { data: session, isPending } = useSession()
 
   const logout = async () => {
     await signOut()
-    setUser(null)
+    window.location.href = '/login'
   }
 
+  // better-auth session.user contains the user info
+  const user = session?.user || null
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, logout }}>
+    <AuthContext.Provider value={{ user, isLoading: isPending, logout }}>
       {children}
     </AuthContext.Provider>
   )
