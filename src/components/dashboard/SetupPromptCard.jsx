@@ -8,11 +8,11 @@ export function BudgetSetupCard() {
         Budget per Kategori
       </p>
       <p className="text-sm text-gray-400 mt-1 mb-4 leading-relaxed">
-        Belum ada budget. Atur budget per kategori agar pengeluaranmu lebih terkontrol.
+        Mulai atur budget per kategori agar pengeluaranmu lebih terkontrol.
       </p>
       <Link to="/budget">
         <button className="w-full py-2.5 bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-bold rounded-xl transition-colors">
-          Atur Budget Sekarang →
+          Atur Sekarang →
         </button>
       </Link>
     </div>
@@ -26,11 +26,11 @@ export function IncomePredictorSetupCard() {
         Prediksi Income Minggu Ini
       </p>
       <p className="text-sm text-gray-400 mt-1 mb-4 leading-relaxed">
-        Belum ada data pemasukan. Atur sumber income kamu agar prediksi bisa ditampilkan.
+       Mulai atur sumber pemasukan kamu agar dapat prediksi
       </p>
       <Link to="/ai/predictor">
         <button className="w-full py-2.5 bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-bold rounded-xl transition-colors">
-          Atur Income Predictor →
+          Atur Sekarang →
         </button>
       </Link>
     </div>

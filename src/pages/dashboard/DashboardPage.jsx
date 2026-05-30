@@ -84,9 +84,11 @@ export default function DashboardPage() {
           <TransactionTable transactions={data?.recentTransactions ?? []} isLoading={isLoading} />
           <div className="space-y-4">
             {hasBudget
-  ? <BudgetDonutChart data={data?.expenseByCategory ?? []} total={data?.expense ?? 0} />
-  : <BudgetSetupCard />
-}
+              ? <BudgetDonutChart data={data?.expenseByCategory ?? []} total={data?.expense ?? 0} />
+              : <BudgetSetupCard />
+            }
+
+            {hasIncome ? (
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
               <p className="text-[10px] font-bold text-[#22c55e] tracking-widest uppercase mb-1">Prediksi Income Minggu Ini</p>
               <p className="text-2xl font-black text-gray-900">{formatRupiah(data?.incomePrediction ?? 1100000)}</p>
@@ -102,6 +104,10 @@ export default function DashboardPage() {
                 </button>
               </Link>
             </div>
+          ) : (
+            <IncomePredictorSetupCard />
+          )}
+
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-3 h-3 bg-blue-500 rounded-sm" />

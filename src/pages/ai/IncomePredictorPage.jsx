@@ -399,17 +399,39 @@ function PredictorDashboard({ historyData, onAddWeek, onReset }) {
 
 // ── ROOT ──────────────────────────────────────────────────────────────────────
 export default function IncomePredictorPage() {
-  const [historyData, setHistoryData] = useState(null)
+  const [historyData, setHistoryData] = useState(() => {
+    // Load dari localStorage saat pertama render
+    const saved = localStorage.getItem('income_predictor_data')
+    return saved ? JSON.parse(saved) : null
+  })
+
+  const handleComplete = (data) => {
+    localStorage.setItem('income_predictor_data', JSON.stringify(data))
+    localStorage.setItem('income_predictor_setup', 'true')
+    setHistoryData(data)
+  }
+
+  const handleAddWeek = (w) => {
+    const updated = [...historyData, w]
+    localStorage.setItem('income_predictor_data', JSON.stringify(updated))
+    setHistoryData(updated)
+  }
+
+  const handleReset = () => {
+    localStorage.removeItem('income_predictor_data')
+    localStorage.removeItem('income_predictor_setup')
+    setHistoryData(null)
+  }
 
   if (!historyData) {
-    return <OnboardingForm onComplete={setHistoryData} />
+    return <OnboardingForm onComplete={handleComplete} />
   }
 
   return (
     <PredictorDashboard
       historyData={historyData}
-      onAddWeek={(w) => setHistoryData(prev => [...prev, w])}
-      onReset={() => setHistoryData(null)}
+      onAddWeek={handleAddWeek}
+      onReset={handleReset}
     />
   )
 }
