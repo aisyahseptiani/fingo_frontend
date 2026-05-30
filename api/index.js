@@ -9,20 +9,8 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-const allowedOrigins = [
-    "http://localhost:5173", 
-    process.env.BETTER_AUTH_URL,
-    process.env.VITE_API_URL ? process.env.VITE_API_URL.replace(/\/api\/?$/, '') : null
-].filter(Boolean);
-
 app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: true, // Allow all origins (reflects the request origin). Better-auth will handle CSRF.
     credentials: true, // penting untuk cookie session (better-auth)
 }));
 app.use(express.json());
