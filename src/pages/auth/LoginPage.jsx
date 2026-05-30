@@ -104,7 +104,7 @@ export default function LoginPage() {
             try {
               const res = await signIn.social({ 
                 provider: 'google',
-                callbackURL: 'http://localhost:5173/',
+                callbackURL: window.location.origin + '/',
                 // Terkadang better-auth meneruskan argumen ekstra ke URL OAuth
                 prompt: 'select_account'
               })

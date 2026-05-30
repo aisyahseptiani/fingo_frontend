@@ -1,7 +1,11 @@
 import { createAuthClient } from "better-auth/react"
 
+const backendURL = import.meta.env.VITE_API_URL 
+  ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '') 
+  : window.location.origin;
+
 export const authClient = createAuthClient({ 
-    baseURL: "http://localhost:3001" // Sesuaikan dengan port backend Express
+    baseURL: backendURL // Menggunakan environment variable untuk production
 })
 
 export const { signIn, signUp, signOut, useSession } = authClient

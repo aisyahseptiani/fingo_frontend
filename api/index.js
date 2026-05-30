@@ -33,6 +33,12 @@ app.get("/api/health", (req, res) => {
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/goals", goalRoutes);
 
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+// Export for Vercel Serverless
+export default app;
+
+// Jalankan server jika dijalankan secara lokal (bukan di Vercel)
+if (!process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+    });
+}
