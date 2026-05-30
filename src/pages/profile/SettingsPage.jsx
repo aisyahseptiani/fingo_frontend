@@ -71,10 +71,14 @@ function SelectRow({ icon: Icon, iconBg, iconColor, label, desc, value, onChange
 }
 
 // ─── Field ───────────────────────────────────────────────────────
-function Field({ label, value, onChange, type = 'text', placeholder, readOnly }) {
+function Field({ label, value, onChange, type = 'text', placeholder, readOnly, required, optional }) {
   return (
     <div>
-      <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">{label}</label>
+      <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
+        {label}
+        {required && <span className="text-red-500 normal-case ml-1 font-medium">(Wajib)</span>}
+        {optional && <span className="text-gray-400 normal-case ml-1 font-medium">(Opsional)</span>}
+      </label>
       <input type={type} value={value} onChange={onChange} placeholder={placeholder} readOnly={readOnly}
         className={`w-full px-4 py-3 rounded-xl border border-gray-200 text-sm outline-none transition-all
           ${readOnly ? 'bg-gray-50 text-gray-400' : 'focus:border-[#22c55e] focus:ring-2 focus:ring-[#22c55e]/10'}
@@ -133,22 +137,57 @@ function AkunSettings({ onBack }) {
   const { user } = useAuthContext()
   const nameParts = (user?.name || '').split(' ')
   
-  const [form, setForm] = useState({
-    firstName: nameParts[0] || '',
-    lastName: nameParts.slice(1).join(' ') || '',
-    email: user?.email || '',
-    phone: '',
-    city: 'Pekanbaru',
-    province: 'Riau',
-    jobType: 'Gig Worker',
-    platform: 'Gojek',
+  const [form, setForm] = useState(() => {
+    const saved = localStorage.getItem('fingo_user_profile')
+    if (saved) return JSON.parse(saved)
+    return {
+      firstName: nameParts[0] || '',
+      lastName: nameParts.slice(1).join(' ') || '',
+      email: user?.email || '',
+      phone: '',
+      city: 'Pekanbaru',
+      province: 'Riau',
+      jobType: 'Gig Worker',
+      platform: 'Gojek',
+    }
   })
+
+  const [localAvatar, setLocalAvatar] = useState(localStorage.getItem('fingo_user_avatar') || user?.image)
 
   const set = (key) => (e) =>
     setForm((p) => ({
       ...p,
       [key]: e.target.value,
     }))
+
+  const handleSimpan = () => {
+    if (!form.firstName || !form.email || !form.phone) return
+    localStorage.setItem('fingo_user_profile', JSON.stringify(form))
+    alert('Profil berhasil disimpan!')
+  }
+
+  const handlePhotoUpload = () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/*'
+    input.onchange = (e) => {
+      const file = e.target.files[0]
+      if (file) {
+        const reader = new FileReader()
+        reader.onload = (ev) => {
+          setLocalAvatar(ev.target.result)
+          localStorage.setItem('fingo_user_avatar', ev.target.result)
+        }
+        reader.readAsDataURL(file)
+      }
+    }
+    input.click()
+  }
+
+  const handlePhotoRemove = () => {
+    setLocalAvatar(null)
+    localStorage.removeItem('fingo_user_avatar')
+  }
 
   return (
     <div className="p-4 sm:p-5 lg:p-6">
@@ -176,15 +215,15 @@ function AkunSettings({ onBack }) {
 
           {/* FOTO */}
           <div className="shrink-0">
-            {user?.image ? (
+            {localAvatar ? (
               <img
-                src={user.image}
-                alt={user.name}
+                src={localAvatar}
+                alt={user?.name || form.firstName}
                 className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover"
               />
             ) : (
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gray-100 flex items-center justify-center text-3xl font-black text-gray-300">
-                {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gray-100 flex items-center justify-center text-3xl font-black text-gray-300 uppercase">
+                {form.firstName?.charAt(0) ?? 'U'}
               </div>
             )}
           </div>
@@ -284,12 +323,14 @@ function AkunSettings({ onBack }) {
             label="Nama Depan"
             value={form.firstName}
             onChange={set('firstName')}
+            required
           />
 
           <Field
             label="Nama Belakang"
             value={form.lastName}
             onChange={set('lastName')}
+            optional
           />
         </div>
 
@@ -301,11 +342,12 @@ function AkunSettings({ onBack }) {
             value={form.email}
             onChange={set('email')}
             type="email"
+            required
           />
 
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
-              Nomor Telepon
+              Nomor Telepon <span className="text-red-500 normal-case ml-1 font-medium">(Wajib)</span>
             </label>
 
             <div className="flex gap-2">
@@ -347,7 +389,7 @@ function AkunSettings({ onBack }) {
 
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
-              Kota / Domisili
+              Kota / Domisili <span className="text-gray-400 normal-case ml-1 font-medium">(Opsional)</span>
             </label>
 
             <select
@@ -380,7 +422,7 @@ function AkunSettings({ onBack }) {
 
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
-              Provinsi
+              Provinsi <span className="text-gray-400 normal-case ml-1 font-medium">(Opsional)</span>
             </label>
 
             <select
@@ -417,7 +459,7 @@ function AkunSettings({ onBack }) {
 
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
-              Tipe Pekerjaan
+              Tipe Pekerjaan <span className="text-gray-400 normal-case ml-1 font-medium">(Opsional)</span>
             </label>
 
             <select
@@ -451,31 +493,31 @@ function AkunSettings({ onBack }) {
             label="Platform"
             value={form.platform}
             onChange={set('platform')}
+            optional
           />
         </div>
 
         {/* SAVE BUTTON */}
         <div className="pt-2">
           <button
+            onClick={handleSimpan}
+            disabled={!form.firstName || !form.email || !form.phone}
             className="
               w-full
               sm:w-auto
               sm:min-w-[220px]
-
               px-5 py-3.5
-
               rounded-2xl
-
               bg-[#22c55e]
               hover:bg-[#16a34a]
-
+              disabled:bg-gray-200
+              disabled:text-gray-400
+              disabled:cursor-not-allowed
               text-white
               text-sm
               font-bold
-
               shadow-sm
               hover:shadow-md
-
               transition-all
               duration-200
             "
@@ -1499,20 +1541,25 @@ function KeamananSettings({ onBack }) {
 // PREFERENSI
 // ════════════════════════════════════════════════════════════════
 function PreferensiSettings({ onBack }) {
-  const [prefs, setPrefs] = useState({
-    grafik: 'Gelap',
-    perPage: '20',
-    formatPendek: true,
-    sembunyiSaldo: true,
-    matauang: 'IDR',
-    pemisah: 'Titik (1.000.000)',
+  const [prefs, setPrefs] = useState(() => {
+    const saved = localStorage.getItem('fingo_prefs_settings')
+    if (saved) return JSON.parse(saved)
+    return {
+      grafik: 'Gelap',
+      perPage: '20',
+      formatPendek: true,
+      sembunyiSaldo: true,
+      matauang: 'IDR',
+      pemisah: 'Titik (1.000.000)',
+    }
   })
 
   const setValue = (key, value) => {
-    setPrefs((prev) => ({
-      ...prev,
-      [key]: value,
-    }))
+    setPrefs((prev) => {
+      const next = { ...prev, [key]: value }
+      localStorage.setItem('fingo_prefs_settings', JSON.stringify(next))
+      return next
+    })
   }
 
   return (
