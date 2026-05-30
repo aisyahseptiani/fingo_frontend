@@ -13,6 +13,8 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer
 } from 'recharts'
+import { useUserSetup } from '../../hooks/useUserSetup'
+import { BudgetSetupCard, IncomePredictorSetupCard } from '../../components/dashboard/SetupPromptCard'
 
 const DUMMY_WEEKLY = [
   { week: 'Mg 1', income: 2000000, expense: 800000  },
@@ -34,6 +36,7 @@ const AI_SUGGESTIONS = [
 export default function DashboardPage() {
   const { user } = useAuthContext()
   const { data, isLoading } = useDashboard()
+  const { hasBudget, hasIncome } = useUserSetup()
   
   const greeting = () => {
     const h = new Date().getHours()
@@ -80,8 +83,11 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5">
           <TransactionTable transactions={data?.recentTransactions ?? []} isLoading={isLoading} />
           <div className="space-y-4">
-            <BudgetDonutChart data={data?.expenseByCategory ?? []} total={data?.totalBudget ?? data?.expense ?? 0} />
-            {data?.hasIncomePredictor ? (
+            {hasBudget
+              ? <BudgetDonutChart data={data?.expenseByCategory ?? []} total={data?.totalBudget ?? data?.expense ?? 0} />
+              : <BudgetSetupCard />
+            }
+            {hasIncome ? (
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
                 <p className="text-[10px] font-bold text-[#22c55e] tracking-widest uppercase mb-1">Prediksi Income Minggu Ini</p>
                 <p className="text-2xl font-black text-gray-900">{formatRupiah(data?.incomePrediction ?? 1100000)}</p>
@@ -98,19 +104,7 @@ export default function DashboardPage() {
                 </Link>
               </div>
             ) : (
-              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col justify-center items-center text-center">
-                <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-2">Prediksi Income AI</p>
-                <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-                  <Zap size={20} className="text-gray-400" />
-                </div>
-                <p className="text-sm font-bold text-gray-800 mb-1">Belum Ada Data</p>
-                <p className="text-xs text-gray-400 mb-4">Isi form 4 minggu untuk memulai prediksi</p>
-                <Link to="/ai/predictor" className="w-full">
-                  <button className="w-full py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-bold rounded-xl transition-colors">
-                    Setup Predictor
-                  </button>
-                </Link>
-              </div>
+              <IncomePredictorSetupCard />
             )}
             
             {data?.aiSuggestion && (
@@ -229,10 +223,13 @@ export default function DashboardPage() {
         </div>
 
         {/* Donut chart */}
-        <BudgetDonutChart data={data?.expenseByCategory ?? []} total={data?.totalBudget ?? data?.expense ?? 0} />
+        {hasBudget
+          ? <BudgetDonutChart data={data?.expenseByCategory ?? []} total={data?.totalBudget ?? data?.expense ?? 0} />
+          : <BudgetSetupCard />
+        }
 
         {/* Prediksi income */}
-        {data?.hasIncomePredictor ? (
+        {hasIncome ? (
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
             <p className="text-[10px] font-bold text-[#22c55e] tracking-widest uppercase mb-1">
               Prediksi Income Minggu Ini
@@ -253,19 +250,7 @@ export default function DashboardPage() {
             </Link>
           </div>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col justify-center items-center text-center">
-            <p className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-2">Prediksi Income AI</p>
-            <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-              <Zap size={20} className="text-gray-400" />
-            </div>
-            <p className="text-sm font-bold text-gray-800 mb-1">Belum Ada Data</p>
-            <p className="text-xs text-gray-400 mb-4">Isi form 4 minggu untuk memulai prediksi</p>
-            <Link to="/ai/predictor" className="w-full">
-              <button className="w-full py-2.5 bg-gray-900 hover:bg-gray-800 text-white text-sm font-bold rounded-xl transition-colors">
-                Setup Predictor
-              </button>
-            </Link>
-          </div>
+          <IncomePredictorSetupCard />
         )}
 
         {/* Saran AI */}
