@@ -72,16 +72,23 @@ function SourceSelect({ value, onChange }) {
 
 // ── ONBOARDING ────────────────────────────────────────────────────────────────
 function OnboardingForm({ onComplete }) {
-  const [weeks, setWeeks] = useState([
-    { amount: '', source: '', label: '4 Minggu lalu' },
-    { amount: '', source: '', label: '3 Minggu lalu' },
-    { amount: '', source: '', label: '2 Minggu lalu' },
-    { amount: '', source: '', label: 'Minggu lalu'   },
-  ])
+  const [weeks, setWeeks] = useState(() => {
+    const saved = localStorage.getItem('fingo_income_predictor_draft')
+    return saved ? JSON.parse(saved) : [
+      { amount: '', source: '', label: '4 Minggu lalu' },
+      { amount: '', source: '', label: '3 Minggu lalu' },
+      { amount: '', source: '', label: '2 Minggu lalu' },
+      { amount: '', source: '', label: 'Minggu lalu'   },
+    ]
+  })
   const [error, setError] = useState('')
 
   const updateWeek = (i, field, val) => {
-    setWeeks(prev => prev.map((w, idx) => idx === i ? { ...w, [field]: val } : w))
+    setWeeks(prev => {
+      const next = prev.map((w, idx) => idx === i ? { ...w, [field]: val } : w)
+      localStorage.setItem('fingo_income_predictor_draft', JSON.stringify(next))
+      return next
+    })
     setError('')
   }
 
@@ -89,6 +96,7 @@ function OnboardingForm({ onComplete }) {
     if (weeks.some(w => !w.amount || !w.source)) return setError('Semua minggu wajib diisi lengkap.')
     const parsed = weeks.map(w => ({ ...w, amount: parseNum(w.amount) }))
     if (parsed.some(w => w.amount <= 0)) return setError('Jumlah pendapatan harus lebih dari 0.')
+    localStorage.removeItem('fingo_income_predictor_draft')
     onComplete(parsed)
   }
 
@@ -400,12 +408,17 @@ function PredictorDashboard({ historyData, onAddWeek, onReset }) {
 // ── ROOT ──────────────────────────────────────────────────────────────────────
 export default function IncomePredictorPage() {
   const [historyData, setHistoryData] = useState(() => {
+<<<<<<< HEAD
     // Load dari localStorage saat pertama render
     const saved = localStorage.getItem('income_predictor_data')
+=======
+    const saved = localStorage.getItem('fingo_income_predictor_data')
+>>>>>>> 2c6eef8180c16e4a9bc8178918a2e6c080a60012
     return saved ? JSON.parse(saved) : null
   })
 
   const handleComplete = (data) => {
+<<<<<<< HEAD
     localStorage.setItem('income_predictor_data', JSON.stringify(data))
     localStorage.setItem('income_predictor_setup', 'true')
     setHistoryData(data)
@@ -421,6 +434,23 @@ export default function IncomePredictorPage() {
     localStorage.removeItem('income_predictor_data')
     localStorage.removeItem('income_predictor_setup')
     setHistoryData(null)
+=======
+    setHistoryData(data)
+    localStorage.setItem('fingo_income_predictor_data', JSON.stringify(data))
+  }
+
+  const handleAddWeek = (w) => {
+    setHistoryData(prev => {
+      const next = [...prev, w]
+      localStorage.setItem('fingo_income_predictor_data', JSON.stringify(next))
+      return next
+    })
+  }
+
+  const handleReset = () => {
+    setHistoryData(null)
+    localStorage.removeItem('fingo_income_predictor_data')
+>>>>>>> 2c6eef8180c16e4a9bc8178918a2e6c080a60012
   }
 
   if (!historyData) {

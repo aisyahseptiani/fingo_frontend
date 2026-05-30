@@ -57,7 +57,16 @@ export default function ImpulsiveDetectorPage() {
   const sisaBudgetStr = `Rp ${sisaBudget.toLocaleString('id-ID')}`
 
   const handleAnalyze = () => {
-    if (!form.description || !form.amount) return
+    if (!form.description || !form.amount || !planned) {
+       addNotification({
+         id: 'impulse_warn',
+         type: 'error',
+         title: 'Data Belum Lengkap',
+         message: 'Pastikan nama, jumlah, dan pilihan spontan/terencana sudah diisi.',
+         source: 'Impulsive Detector'
+       });
+       return;
+    }
     setAnalyzed(true)
 
     // Logika skor impulsif sederhana
@@ -218,7 +227,8 @@ export default function ImpulsiveDetectorPage() {
           {/* Tombol analisis */}
           <button
             onClick={handleAnalyze}
-            className="w-full py-4 bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold rounded-xl transition-colors text-sm sm:text-base"
+            disabled={!form.description || !form.amount || !planned}
+            className="w-full py-4 bg-[#22c55e] hover:bg-[#16a34a] disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors text-sm sm:text-base"
           >
             Analisis Sekarang
           </button>
@@ -271,7 +281,7 @@ export default function ImpulsiveDetectorPage() {
                 { label: 'Pembelian tidak terencana', level: planned === 'no' ? 'Tinggi' : 'Rendah' },
                 { label: 'Kategori Belanja/Hiburan', level: ['Hiburan', 'Belanja'].includes(form.category) ? 'Tinggi' : 'Rendah' },
                 { label: 'Jumlah vs sisa budget', level: Number(form.amount) > sisaBudget ? 'Tinggi' : 'Rendah' },
-                { label: 'Urgensi kebutuhan', level: 'Sedang' },
+                { label: 'Indikasi Impulsif (AI)', level: analyzed ? (scoreDisplay > 70 ? 'Tinggi' : scoreDisplay > 40 ? 'Sedang' : 'Rendah') : 'Sedang' },
               ].map((r, i) => (
                 <div key={i} className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">{r.label}</span>

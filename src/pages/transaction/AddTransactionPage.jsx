@@ -84,7 +84,7 @@ function FormContent({
       {/* Kategori */}
       <div>
         <label className="block text-sm text-gray-500 mb-2">
-          Pilih Kategori
+          Pilih Kategori <span className="text-red-500 text-xs ml-1 font-medium">(Wajib)</span>
         </label>
 
         <div className="grid grid-cols-4 gap-2">
@@ -109,7 +109,7 @@ function FormContent({
       {/* Keterangan */}
       <div>
         <label className="block text-sm text-gray-500 mb-1.5">
-          Keterangan
+          Keterangan <span className="text-gray-400 text-xs ml-1 font-medium">(Opsional)</span>
         </label>
 
         <input
@@ -129,7 +129,7 @@ function FormContent({
       {/* Jumlah */}
       <div>
         <label className="block text-sm text-gray-500 mb-1.5">
-          Jumlah (Rp)
+          Jumlah (Rp) <span className="text-red-500 text-xs ml-1 font-medium">(Wajib)</span>
         </label>
 
         <input
@@ -193,10 +193,11 @@ function FormContent({
         <button
           type="button"
           onClick={onSimpan}
+          disabled={!form.amount || !selectedCategory}
           className={`flex-1 py-3.5 font-bold rounded-xl transition-all flex items-center justify-center gap-2
             ${saved
               ? 'bg-green-50 border border-[#22c55e] text-[#22c55e]'
-              : 'bg-[#22c55e] hover:bg-[#16a34a] text-white'
+              : 'bg-[#22c55e] hover:bg-[#16a34a] text-white disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed'
             }`}
         >
           {saved ? <><CheckCircle size={16} /> Tersimpan!</> : 'Simpan'}
@@ -347,7 +348,7 @@ export default function AddTransactionPage() {
     }))
 
   const handleSimpan = () => {
-    if (!form.description || !form.amount) return
+    if (!form.amount || !selectedCategory) return
     addTransaction({
       type: type.toUpperCase(),
       description: form.description,

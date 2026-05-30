@@ -11,35 +11,7 @@ const NotificationContext = createContext(null)
  *  - 'budget_warning'→ Peringatan budget mendekati / melebihi limit
  */
 
-const DEFAULT_NOTIFICATIONS = [
-  {
-    id: 'dashboard_ai_1',
-    type: 'ai_dashboard',
-    title: 'Pengeluaran hiburan naik 23%',
-    message: 'Bulan ini kamu menghabiskan Rp 580.000 untuk hiburan — 23% lebih tinggi dari bulan lalu. Pertimbangkan untuk menetapkan batas bulanan.',
-    source: 'Dashboard',
-    timestamp: new Date().toISOString(),
-    read: false,
-  },
-  {
-    id: 'dashboard_ai_2',
-    type: 'ai_dashboard',
-    title: 'Pemasukan stabil 3 bulan berturut',
-    message: 'Kamu berhasil menjaga konsistensi pemasukan selama 3 bulan. Ini saat yang tepat untuk mulai investasi rutin.',
-    source: 'Dashboard',
-    timestamp: new Date().toISOString(),
-    read: false,
-  },
-  {
-    id: 'profile_ai_dana_darurat',
-    type: 'ai_profile',
-    title: 'Tingkatkan Tabungan Dana Darurat',
-    message: 'Dengan pola pemasukanmu yang naik, tambahkan Rp 300.000/bulan ke dana darurat. Target laptop bisa tercapai bulan Juni — 2 bulan lebih cepat dari rencana!',
-    source: 'Profil',
-    timestamp: new Date().toISOString(),
-    read: false,
-  },
-]
+const DEFAULT_NOTIFICATIONS = []
 
 export function NotificationProvider({ children }) {
   const [notifications, setNotifications] = useState(DEFAULT_NOTIFICATIONS)

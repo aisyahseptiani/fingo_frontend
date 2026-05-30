@@ -84,6 +84,7 @@ export default function DashboardPage() {
           <TransactionTable transactions={data?.recentTransactions ?? []} isLoading={isLoading} />
           <div className="space-y-4">
             {hasBudget
+<<<<<<< HEAD
               ? <BudgetDonutChart data={data?.expenseByCategory ?? []} total={data?.expense ?? 0} />
               : <BudgetSetupCard />
             }
@@ -112,17 +113,47 @@ export default function DashboardPage() {
               <div className="flex items-center gap-2 mb-2">
                 <div className="w-3 h-3 bg-blue-500 rounded-sm" />
                 <span className="font-bold text-sm text-gray-900">Saran AI</span>
+=======
+              ? <BudgetDonutChart data={data?.expenseByCategory ?? []} total={data?.totalBudget ?? data?.expense ?? 0} />
+              : <BudgetSetupCard />
+            }
+            {hasIncome ? (
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                <p className="text-[10px] font-bold text-[#22c55e] tracking-widest uppercase mb-1">Prediksi Income Minggu Ini</p>
+                <p className="text-2xl font-black text-gray-900">{formatRupiah(data?.incomePrediction ?? 1100000)}</p>
+                <p className="text-xs text-gray-400 mt-0.5 mb-3">
+                  <span className="text-[#22c55e] font-semibold">Berdasarkan AI</span>
+                </p>
+                <div className="h-1.5 bg-gray-100 rounded-full mb-4">
+                  <div className="h-1.5 bg-[#22c55e] rounded-full w-3/4" />
+                </div>
+                <Link to="/ai/predictor">
+                  <button className="w-full py-2.5 bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-bold rounded-xl transition-colors">
+                    Lihat Detail
+                  </button>
+                </Link>
               </div>
-              <p className="text-sm text-gray-500 leading-relaxed mb-3">
-                Budget hiburanmu sudah <strong>55% terpakai.</strong>{' '}
-                Kurangi pengeluaran akhir bulan dan alihkan ke tabungan <strong>Rp 200.000</strong> di bulan depan.
-              </p>
-              <Link to="/ai/assistant">
-                <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors">
-                  <span>💬</span> Tanya AI
-                </button>
-              </Link>
-            </div>
+            ) : (
+              <IncomePredictorSetupCard />
+            )}
+            
+            {data?.aiSuggestion && (
+              <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-3 h-3 bg-blue-500 rounded-sm" />
+                  <span className="font-bold text-sm text-gray-900">Saran AI</span>
+                </div>
+                <p className="text-sm text-gray-500 leading-relaxed mb-3">
+                  {data.aiSuggestion.message}
+                </p>
+                <Link to="/ai/assistant">
+                  <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+                    <span>💬</span> Tanya AI
+                  </button>
+                </Link>
+>>>>>>> 2c6eef8180c16e4a9bc8178918a2e6c080a60012
+              </div>
+            )}
           </div>
         </div>
 
@@ -224,7 +255,7 @@ export default function DashboardPage() {
 
         {/* Donut chart */}
         {hasBudget
-          ? <BudgetDonutChart data={data?.expenseByCategory ?? []} total={data?.expense ?? 0} />
+          ? <BudgetDonutChart data={data?.expenseByCategory ?? []} total={data?.totalBudget ?? data?.expense ?? 0} />
           : <BudgetSetupCard />
         }
 
@@ -238,8 +269,7 @@ export default function DashboardPage() {
               {formatRupiah(data?.incomePrediction ?? 1100000)}
             </p>
             <p className="text-xs text-gray-400 mt-0.5 mb-3">
-              Historis: Rp 980.000/minggu{' '}
-              <span className="text-[#22c55e] font-semibold">↑ +12%</span>
+              <span className="text-[#22c55e] font-semibold">Berdasarkan AI</span>
             </p>
             <div className="h-1.5 bg-gray-100 rounded-full mb-4">
               <div className="h-1.5 bg-[#22c55e] rounded-full w-3/4" />
@@ -255,22 +285,22 @@ export default function DashboardPage() {
         )}
 
         {/* Saran AI */}
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-3 h-3 bg-blue-500 rounded-sm" />
-            <span className="font-bold text-sm text-gray-900">Saran AI</span>
+        {data?.aiSuggestion && (
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-3 h-3 bg-blue-500 rounded-sm" />
+              <span className="font-bold text-sm text-gray-900">Saran AI</span>
+            </div>
+            <p className="text-sm text-gray-500 leading-relaxed mb-3">
+              {data.aiSuggestion.message}
+            </p>
+            <Link to="/ai/assistant">
+              <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors w-full justify-center">
+                <span>💬</span> Tanya AI
+              </button>
+            </Link>
           </div>
-          <p className="text-sm text-gray-500 leading-relaxed mb-3">
-            Budget hiburanmu sudah <strong>55% terpakai.</strong>{' '}
-            Kurangi pengeluaran akhir bulan dan alihkan ke tabungan{' '}
-            <strong>Rp 200.000</strong> di bulan depan.
-          </p>
-          <Link to="/ai/assistant">
-            <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm text-gray-600 hover:bg-gray-50 transition-colors w-full justify-center">
-              <span>💬</span> Tanya AI
-            </button>
-          </Link>
-        </div>
+        )}
 
         {/* Area chart */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4">

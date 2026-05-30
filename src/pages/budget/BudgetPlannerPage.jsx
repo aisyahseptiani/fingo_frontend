@@ -319,20 +319,32 @@ function ProgressView({ income, savedValues, onReset }) {
 // MAIN EXPORT
 // ════════════════════════════════════════════════════════════════
 export default function BudgetPlannerPage() {
-  const [income, setIncome]           = useState('')
+  const [income, setIncome]           = useState(() => {
+    const draft = localStorage.getItem('fingo_budget_income_draft')
+    const saved = localStorage.getItem('fingo_budget_income')
+    return draft || saved || ''
+  })
   const [isLoading, setIsLoading]     = useState(false)
   const [showBudget, setShowBudget]   = useState(false)
-  const [savedBudget, setSavedBudget] = useState(false)
   const [usedAI, setUsedAI]           = useState(false)
 
   const incomeNum = parseNum(income)
   const aiRec     = getAIRec(incomeNum)
 
-  const initValues = () =>
-    Object.fromEntries(COLUMNS.flatMap(c => c.categories).map(cat => [cat, 0]))
+  const initValues = () => {
+    const draft = localStorage.getItem('fingo_budget_values_draft')
+    if (draft) return JSON.parse(draft)
+    return Object.fromEntries(COLUMNS.flatMap(c => c.categories).map(cat => [cat, 0]))
+  }
 
   const [budgetValues, setBudgetValues] = useState(initValues)
-  const [savedValues, setSavedValues]   = useState({})
+  const [savedValues, setSavedValues]   = useState(() => {
+    const saved = localStorage.getItem('fingo_budget_values')
+    return saved ? JSON.parse(saved) : {}
+  })
+  const [savedBudget, setSavedBudget] = useState(() => {
+    return !!localStorage.getItem('fingo_budget_values')
+  })
 
   const handleAturBudget = () => {
     if (!incomeNum) return
@@ -342,9 +354,32 @@ export default function BudgetPlannerPage() {
     setTimeout(() => { setIsLoading(false); setShowBudget(true) }, 1200)
   }
   const handleUseAI = () => { setBudgetValues({ ...aiRec }); setUsedAI(true) }
-  const handleSave  = () => { setSavedValues({ ...budgetValues }); setSavedBudget(true) }
-  const handleReset = () => { setSavedBudget(false); setShowBudget(true) }
-  const updateValue = (cat, val) => { setBudgetValues(p => ({ ...p, [cat]: val })); setUsedAI(false) }
+  const handleSave  = () => { 
+    setSavedValues({ ...budgetValues }); 
+    setSavedBudget(true);
+    localStorage.setItem('fingo_budget_income', income);
+    localStorage.setItem('fingo_budget_values', JSON.stringify(budgetValues));
+    localStorage.removeItem('fingo_budget_income_draft');
+    localStorage.removeItem('fingo_budget_values_draft');
+  }
+  const handleReset = () => { 
+    setSavedBudget(false); 
+    setShowBudget(true);
+    localStorage.removeItem('fingo_budget_income');
+    localStorage.removeItem('fingo_budget_values');
+    localStorage.removeItem('fingo_budget_income_draft');
+    localStorage.removeItem('fingo_budget_values_draft');
+    setIncome('');
+    setBudgetValues(initValues());
+  }
+  const updateValue = (cat, val) => { 
+    setBudgetValues(p => {
+      const next = { ...p, [cat]: val }
+      localStorage.setItem('fingo_budget_values_draft', JSON.stringify(next))
+      return next
+    })
+    setUsedAI(false) 
+  }
 
   if (savedBudget) {
     return <ProgressView income={incomeNum} savedValues={savedValues} onReset={handleReset} />
@@ -368,7 +403,12 @@ export default function BudgetPlannerPage() {
           <input
             type="text"
             value={income ? formatRp(parseNum(income)) : ''}
-            onChange={e => { setIncome(e.target.value); setShowBudget(false); setSavedBudget(false) }}
+            onChange={e => { 
+              setIncome(e.target.value); 
+              localStorage.setItem('fingo_budget_income_draft', e.target.value);
+              setShowBudget(false); 
+              setSavedBudget(false) 
+            }}
             placeholder="0"
             className="flex-1 text-2xl lg:text-3xl font-black text-gray-900 outline-none placeholder:text-gray-300 border-none bg-transparent min-w-0"
           />

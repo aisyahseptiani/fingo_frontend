@@ -1,10 +1,10 @@
 // routes/ProtectedRoute.jsx
-import { Navigate, Outlet } from 'react-router-dom'
+import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuthContext } from '../context/AuthContext'
-import Spinner from '../components/ui/Spinner'
 
 export default function ProtectedRoute() {
   const { user, isLoading } = useAuthContext()
+  const { pathname } = useLocation()
 
   if (isLoading) {
     return (
@@ -17,5 +17,14 @@ export default function ProtectedRoute() {
     )
   }
 
-  return user ? <Outlet /> : <Navigate to="/login" replace />
+  if (!user) return <Navigate to="/login" replace />
+
+  // Check if profile is completed
+  const localProfile = localStorage.getItem('fingo_user_profile')
+  const isProfileComplete = localProfile ? JSON.parse(localProfile).phone : false
+  if (!isProfileComplete && pathname !== '/settings') {
+    return <Navigate to="/settings" replace />
+  }
+
+  return <Outlet />
 }
