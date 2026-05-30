@@ -39,6 +39,15 @@ export function useRegister() {
     try {
       const { error: err } = await signUp.email({ email, password, name })
       if (err) throw err
+      
+      // better-auth secara default langsung me-login-kan user setelah signUp.
+      // Karena Anda ingin user kembali ke menu login dan login manual, 
+      // kita sign out sesi yang baru terbuat tersebut.
+      await signOut()
+      
+      // Opsional: Tampilkan pesan sukses
+      alert("Registrasi berhasil! Silakan login menggunakan akun Anda.");
+      
       navigate('/login')
     } catch (err) {
       setIsError(true)

@@ -4,35 +4,59 @@ import { useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useAuthContext } from '../../context/AuthContext'
 
+import { useGetGoals, useAddGoal } from '../../hooks/useGoals'
+import { useGetTransactions } from '../../hooks/useTransactions'
+import { useDashboard } from '../../hooks/useDashboard'
+
 const formatRp = (n) => new Intl.NumberFormat('id-ID', {
   style: 'currency', currency: 'IDR', minimumFractionDigits: 0
 }).format(n)
 
-const ACTIVITY_SCORES = [
-  { label: 'Konsistensi Pemasukan',  percent: 95, color: 'bg-[#22c55e]'  },
-  { label: 'Kepatuhan Budget',       percent: 88, color: 'bg-[#22c55e]'  },
-  { label: 'Kontrol Implusif',       percent: 72, color: 'bg-yellow-400' },
-  { label: 'Progres Target',         percent: 80, color: 'bg-blue-500'   },
-  { label: 'Keteraturan Pencatatan', percent: 93, color: 'bg-[#22c55e]'  },
-]
-
-const TARGETS = [
-  { label: 'Dana Darurat 6 bulan',      percent: 34, current: 8400000, goal: 25000000, est: 'Est. Des 2026',     color: 'bg-blue-500',    textColor: 'text-blue-500'    },
-  { label: 'Laptop Baru untuk Kerja',   percent: 75, current: 6000000, goal: 8000000,  est: '🔥 Hampir selesai!', color: 'bg-[#22c55e]',   textColor: 'text-[#22c55e]'  },
-  { label: 'Liburan ke Jepang',         percent: 21, current: 3200000, goal: 15000000, est: 'Target: Mar 2027',  color: 'bg-yellow-400',  textColor: 'text-yellow-500'  },
-  { label: 'Mulai Investasi Reksa Dana',percent: 10, current: 500000,  goal: 5000000,  est: 'Target: Jun 2026', color: 'bg-orange-400',  textColor: 'text-orange-500'  },
-]
-
-const STAT_CARDS = [
-  { value: 'Rp 4.2 jt',  label: 'Rata-rata pemasukan/Bulan', sub: '↑ Naik 12% dari 3 bulan lalu', subColor: 'text-[#22c55e]', valueColor: 'text-[#22c55e]'  },
-  { value: 'Rp 12.4 jt', label: 'Total Tabungan Terkumpul',  sub: 'Sejak April 2025',              subColor: 'text-blue-500',  valueColor: 'text-blue-500'   },
-  { value: '287',         label: 'Total Transaksi Dicatat',   sub: 'Rata-rata 24/bulan',            subColor: 'text-gray-400',  valueColor: 'text-gray-900'   },
-  { value: '12',          label: 'Bulan Streak Aktif',        sub: 'Konsisten tanpa jeda',          subColor: 'text-gray-400',  valueColor: 'text-[#22c55e]'  },
-]
-
 export default function ProfilePage() {
   const navigate = useNavigate()
   const { user, logout } = useAuthContext()
+  
+  const { data: rawGoals = [] } = useGetGoals()
+  const { mutate: addGoal } = useAddGoal()
+  const { data: transactions = [] } = useGetTransactions()
+  const { data: dashboard = {} } = useDashboard()
+
+  const TARGETS = rawGoals.map(g => ({
+    label: g.name,
+    percent: g.targetAmount > 0 ? Math.round((g.currentAmount / g.targetAmount) * 100) : 0,
+    current: g.currentAmount,
+    goal: g.targetAmount,
+    est: g.deadline ? `Target: ${new Date(g.deadline).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' })}` : 'Tidak ada tenggat',
+    color: g.color || 'bg-blue-500',
+    textColor: 'text-blue-500'
+  }))
+
+  const totalIncome = transactions.filter(t => t.type === 'INCOME').reduce((sum, t) => sum + t.amount, 0)
+  const totalExpense = transactions.filter(t => t.type === 'EXPENSE').reduce((sum, t) => sum + t.amount, 0)
+  const totalSavings = totalIncome - totalExpense
+
+  const uniqueMonths = new Set(transactions.map(t => t.date.substring(0, 7))).size || 1
+  const avgIncome = Math.round(totalIncome / uniqueMonths)
+
+  const STAT_CARDS = [
+    { value: formatRp(avgIncome), label: 'Rata-rata pemasukan/Bulan', sub: 'Berdasarkan riwayat', subColor: 'text-[#22c55e]', valueColor: 'text-[#22c55e]' },
+    { value: formatRp(totalSavings), label: 'Total Tabungan Terkumpul', sub: `Dari ${uniqueMonths} bulan aktif`, subColor: 'text-blue-500', valueColor: 'text-blue-500' },
+    { value: transactions.length.toString(), label: 'Total Transaksi Dicatat', sub: `Rata-rata ${Math.round(transactions.length / uniqueMonths)}/bulan`, subColor: 'text-gray-400', valueColor: 'text-gray-900' },
+    { value: `${uniqueMonths}`, label: 'Bulan Aktif', sub: 'Total bulan pencatatan', subColor: 'text-gray-400', valueColor: 'text-[#22c55e]' },
+  ]
+
+  const budgetUsed = dashboard.expense > 0 ? Math.min(Math.round((dashboard.expense / 5000000) * 100), 100) : 0;
+  const targetProgress = TARGETS.length > 0 ? Math.round(TARGETS.reduce((sum, t) => sum + t.percent, 0) / TARGETS.length) : 0;
+
+  const ACTIVITY_SCORES = [
+    { label: 'Konsistensi Pemasukan',  percent: totalIncome > 0 ? 100 : 0, color: 'bg-[#22c55e]'  },
+    { label: 'Kepatuhan Budget',       percent: Math.max(100 - budgetUsed, 0), color: (100 - budgetUsed) > 50 ? 'bg-[#22c55e]' : 'bg-yellow-400'  },
+    { label: 'Kontrol Implusif',       percent: dashboard.impulsiveCount > 5 ? 40 : 90, color: dashboard.impulsiveCount > 5 ? 'bg-yellow-400' : 'bg-[#22c55e]' },
+    { label: 'Progres Target',         percent: targetProgress, color: 'bg-blue-500'   },
+    { label: 'Keteraturan Pencatatan', percent: transactions.length > 0 ? 95 : 0, color: 'bg-[#22c55e]'  },
+  ]
+
+  const totalScore = Math.round(ACTIVITY_SCORES.reduce((sum, a) => sum + a.percent, 0) / ACTIVITY_SCORES.length)
 
   // =========================
   // NEW STATE
@@ -44,10 +68,9 @@ export default function ProfilePage() {
   const handleSaveTarget = () => {
     if (!targetDescription || !targetAmount) return
 
-    // nanti bisa disambungkan ke API / database
-    console.log({
-      description: targetDescription,
-      amount: targetAmount
+    addGoal({
+      name: targetDescription,
+      targetAmount: Number(targetAmount)
     })
 
     // reset form
@@ -86,15 +109,19 @@ export default function ProfilePage() {
 
         {/* Desktop layout */}
         <div className="hidden lg:flex items-center gap-6">
-          <div className="w-28 h-28 rounded-2xl bg-gray-100 shrink-0 flex items-center justify-center text-4xl font-black text-gray-300">
-            {user?.name?.charAt(0) ?? 'A'}
-          </div>
+          {user?.image ? (
+            <img src={user.image} alt={user?.name} className="w-28 h-28 rounded-2xl object-cover shrink-0" />
+          ) : (
+            <div className="w-28 h-28 rounded-2xl bg-gray-100 shrink-0 flex items-center justify-center text-4xl font-black text-gray-300">
+              {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-black text-gray-900">{user?.name ?? 'Aisyah Septiani'}</h2>
+            <h2 className="text-2xl font-black text-gray-900">{user?.name ?? 'Pengguna'}</h2>
             <p className="text-[#22c55e] font-semibold text-sm mt-0.5">
-              {user?.jobType ?? 'Gig Worker'} & Freelance UI/UX Designer
+              {user?.email ?? 'Tidak ada email'}
             </p>
-            <p className="text-gray-400 text-sm mt-1">Pekanbaru, Riau · Bergabung sejak 2025</p>
+            <p className="text-gray-400 text-sm mt-1">Bergabung sejak {new Date(user?.createdAt || Date.now()).getFullYear()}</p>
             <span className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full border border-[#22c55e] text-[#22c55e] text-xs font-semibold">
               ✓ Pengguna Terverifikasi
             </span>
@@ -104,10 +131,10 @@ export default function ProfilePage() {
               <svg viewBox="0 0 36 36" className="w-24 h-24 -rotate-90">
                 <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f0f0f0" strokeWidth="3" />
                 <circle cx="18" cy="18" r="15.9" fill="none" stroke="#22c55e" strokeWidth="3"
-                  strokeDasharray="87 100" strokeLinecap="round" />
+                  strokeDasharray={`${totalScore} 100`} strokeLinecap="round" />
               </svg>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-black text-gray-900">87</span>
+                <span className="text-2xl font-black text-gray-900">{totalScore}</span>
                 <span className="text-[10px] text-gray-400">Skor</span>
               </div>
             </div>
@@ -120,19 +147,23 @@ export default function ProfilePage() {
         {/* Mobile layout */}
         <div className="lg:hidden">
           <div className="flex items-start gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gray-100 shrink-0 flex items-center justify-center text-2xl font-black text-gray-300">
-              {user?.name?.charAt(0) ?? 'A'}
-            </div>
+            {user?.image ? (
+              <img src={user.image} alt={user?.name} className="w-16 h-16 rounded-2xl object-cover shrink-0" />
+            ) : (
+              <div className="w-16 h-16 rounded-2xl bg-gray-100 shrink-0 flex items-center justify-center text-2xl font-black text-gray-300">
+                {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}
+              </div>
+            )}
 
             <div className="flex-1 min-w-0">
               <h2 className="text-lg font-black text-gray-900 leading-tight">
-                {user?.name ?? 'Aisyah Septiani'}
+                {user?.name ?? 'Pengguna'}
               </h2>
               <p className="text-[#22c55e] font-semibold text-xs mt-0.5">
-                {user?.jobType ?? 'Gig Worker'} & Freelance UI/UX Designer
+                {user?.email ?? 'Tidak ada email'}
               </p>
               <p className="text-gray-400 text-xs mt-1">
-                Pekanbaru, Riau · Bergabung 2025
+                Bergabung {new Date(user?.createdAt || Date.now()).getFullYear()}
               </p>
             </div>
 
@@ -141,10 +172,10 @@ export default function ProfilePage() {
                 <svg viewBox="0 0 36 36" className="w-16 h-16 -rotate-90">
                   <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f0f0f0" strokeWidth="3.5" />
                   <circle cx="18" cy="18" r="15.9" fill="none" stroke="#22c55e" strokeWidth="3.5"
-                    strokeDasharray="87 100" strokeLinecap="round" />
+                    strokeDasharray={`${totalScore} 100`} strokeLinecap="round" />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-lg font-black text-gray-900">87</span>
+                  <span className="text-lg font-black text-gray-900">{totalScore}</span>
                   <span className="text-[9px] text-gray-400">Skor</span>
                 </div>
               </div>
@@ -180,7 +211,7 @@ export default function ProfilePage() {
             Aktivitas Keuangan
           </h2>
           <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-4">
-            Breakdown Skor 87
+            Breakdown Skor {totalScore}
           </p>
           <div className="space-y-3 lg:space-y-4">
             {ACTIVITY_SCORES.map((a, i) => {

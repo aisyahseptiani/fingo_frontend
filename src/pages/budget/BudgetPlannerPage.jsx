@@ -5,6 +5,7 @@ import {
   TrendingUp, Coffee, Utensils
 } from 'lucide-react'
 import { useNotifications } from '../../context/NotificationContext'
+import { useGetTransactions } from '../../hooks/useTransactions'
 
 const formatRp = (n) => new Intl.NumberFormat('id-ID').format(Number(n) || 0)
 const parseNum = (str) => Number(String(str).replace(/\./g, '').replace(/[^0-9]/g, '')) || 0
@@ -137,20 +138,29 @@ function BudgetColumn({ col, income, values, aiRec, onChange, compact }) {
 // ─── Progress View ────────────────────────────────────────────────
 function ProgressView({ income, savedValues, onReset }) {
   const { addNotification } = useNotifications()
+  const { data: rawTransactions = [] } = useGetTransactions()
 
-  const DUMMY_SPENT_PCT = {
-    'Makanan & Minuman': 0.85, 'Transportasi': 0.45, 'Tagihan': 0.95,
-    'Kesehatan': 0.26, 'Kebutuhan Rumah': 0.40, 'Belanja': 1.05,
-    'Hiburan': 0.87, 'Hobi & Langganan': 0.30, 'Pendidikan': 0.40,
-    'Dana Darurat': 0.34, 'Investasi': 0.20,
-  }
+  // Analisis pengeluaran bulan ini
+  const now = new Date()
+  const currentMonth = now.getMonth()
+  const currentYear = now.getFullYear()
+
+  const spentPerCategory = {}
+  rawTransactions.forEach(t => {
+    const d = new Date(t.date)
+    if (d.getMonth() === currentMonth && d.getFullYear() === currentYear) {
+      if (t.type === 'EXPENSE') {
+        if (!spentPerCategory[t.category]) spentPerCategory[t.category] = 0
+        spentPerCategory[t.category] += t.amount
+      }
+    }
+  })
 
   const activeItems = Object.entries(savedValues)
     .filter(([, limit]) => limit > 0)
     .map(([cat, limit]) => {
-      const pct     = DUMMY_SPENT_PCT[cat] ?? 0.3
-      const percent = Math.round(pct * 100)
-      const spent   = Math.round(limit * pct)
+      const spent = spentPerCategory[cat] || 0
+      const percent = Math.round((spent / limit) * 100)
       return { cat, limit, spent, percent }
     })
 
@@ -213,7 +223,9 @@ function ProgressView({ income, savedValues, onReset }) {
   const ProgressCard = () => (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
       <div className="flex items-center justify-between mb-5">
-        <h2 className="font-bold text-gray-900 text-sm lg:text-base">Progres Budget — April 2026</h2>
+        <h2 className="font-bold text-gray-900 text-sm lg:text-base">
+          Progres Budget — {new Date().toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}
+        </h2>
         <span className="text-xs lg:text-sm text-gray-400">Pemasukan: Rp {formatRp(income)}</span>
       </div>
       {COLUMNS.map(col => {

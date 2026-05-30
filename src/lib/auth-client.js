@@ -1,36 +1,19 @@
-// src/lib/auth-client.js - Mock version (tanpa hooks di dalam fungsi biasa)
+import { createAuthClient } from "better-auth/react"
 
-const STORAGE_KEY = 'mock_user'
+const backendURL = import.meta.env.VITE_API_URL 
+  ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, '') 
+  : window.location.origin;
 
-// Helper murni - tidak pakai hooks
-export const getStoredUser = () =>
-  JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null')
+export const authClient = createAuthClient({ 
+    baseURL: backendURL // Menggunakan environment variable untuk production
+})
 
-export const signIn = {
-  email: async ({ email, password }) => {
-    const user = { id: '1', name: 'Aisyah Septiani', email, jobType: 'Gig Worker' }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
-    window.dispatchEvent(new Event('mock_auth_change'))
-    return { data: user, error: null }
-  }
-}
+export const { signIn, signUp, signOut, useSession } = authClient
 
-export const signUp = {
-  email: async ({ email, password, name }) => {
-    const user = { id: '1', name, email, jobType: 'Gig Worker' }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(user))
-    window.dispatchEvent(new Event('mock_auth_change'))
-    return { data: user, error: null }
-  }
-}
-
-export const signOut = async () => {
-  localStorage.removeItem(STORAGE_KEY)
-  window.dispatchEvent(new Event('mock_auth_change'))
-  return { error: null }
-}
-
-// klo backend ada
-// import { createAuthClient } from "better-auth/react"
-// export const authClient = createAuthClient({ baseURL: "http://localhost:3000" })
-// export const { signIn, signUp, signOut, useSession } = authClient
+// Helper murni - agar sesuai dengan struktur sebelumnya (jika ada yang masih butuh getStoredUser)
+// Pada real app, disarankan menggunakan useSession dari hook di komponen
+export const getStoredUser = () => {
+    // Pada better-auth, sesi otomatis dikelola, namun fungsi ini dipertahankan sbg fallback 
+    // agar tidak memecahkan UI yang menggunakan getStoredUser() secara sinkron sebelum refactor
+    return null; 
+}

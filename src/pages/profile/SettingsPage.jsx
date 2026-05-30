@@ -5,6 +5,7 @@ import {
   FileText, BarChart2, List, EyeOff, DollarSign,
   Sliders, Wallet, Plus
 } from 'lucide-react'
+import { useAuthContext } from '../../context/AuthContext'
 
 // ─── Toggle ─────────────────────────────────────────────────────
 function Toggle({ checked, onChange }) {
@@ -129,11 +130,14 @@ function MainSettings({ onNav }) {
 // AKUN
 // ════════════════════════════════════════════════════════════════
 function AkunSettings({ onBack }) {
+  const { user } = useAuthContext()
+  const nameParts = (user?.name || '').split(' ')
+  
   const [form, setForm] = useState({
-    firstName: 'Aisyah',
-    lastName: 'Septiani',
-    email: 'aisyah@example.com',
-    phone: '1234567890',
+    firstName: nameParts[0] || '',
+    lastName: nameParts.slice(1).join(' ') || '',
+    email: user?.email || '',
+    phone: '',
     city: 'Pekanbaru',
     province: 'Riau',
     jobType: 'Gig Worker',
@@ -172,15 +176,17 @@ function AkunSettings({ onBack }) {
 
           {/* FOTO */}
           <div className="shrink-0">
-            <div
-              className="
-                w-20 h-20
-                sm:w-24 sm:h-24
-
-                rounded-2xl
-                bg-[#1C3829]
-              "
-            />
+            {user?.image ? (
+              <img
+                src={user.image}
+                alt={user.name}
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover"
+              />
+            ) : (
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gray-100 flex items-center justify-center text-3xl font-black text-gray-300">
+                {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}
+              </div>
+            )}
           </div>
 
           {/* RIGHT SIDE */}
@@ -200,7 +206,7 @@ function AkunSettings({ onBack }) {
                   mb-3
                 "
               >
-                aisyah@example.com · Bergabung April 2024
+                {user?.email ?? 'Tidak ada email'} · Bergabung {new Date(user?.createdAt || Date.now()).getFullYear()}
               </p>
 
             {/* BUTTONS */}

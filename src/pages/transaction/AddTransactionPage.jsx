@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import {
   Bell, ChevronRight, ArrowUpCircle, ArrowDownCircle, CheckCircle,
 } from 'lucide-react'
-import { useTransactionContext } from '../../context/TransactionContext'
+import { useGetTransactions, useAddTransaction, useGetTransactionSummary } from '../../hooks/useTransactions'
 
 const EXPENSE_CATEGORIES = [
   'Makanan',
@@ -209,7 +209,7 @@ function FormContent({
 /* =========================
    SUMMARY PANEL
 ========================= */
-function SummaryPanel({ todayTransactions, totalIncome, totalExpense }) {
+function SummaryPanel({ todayTransactions, summary }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
@@ -219,11 +219,7 @@ function SummaryPanel({ todayTransactions, totalIncome, totalExpense }) {
           </p>
 
           <p className="text-xl font-black text-gray-900">
-            {formatRp(4200000)}
-          </p>
-
-          <p className="text-xs text-[#22c55e] font-medium mt-1">
-            12 Transaksi
+            {formatRp(summary?.totalIncome || 0)}
           </p>
         </div>
 
@@ -233,11 +229,7 @@ function SummaryPanel({ todayTransactions, totalIncome, totalExpense }) {
           </p>
 
           <p className="text-xl font-black text-gray-900">
-            {formatRp(1750000)}
-          </p>
-
-          <p className="text-xs text-red-500 font-medium mt-1">
-            36 Transaksi
+            {formatRp(summary?.totalExpense || 0)}
           </p>
         </div>
       </div>
@@ -309,11 +301,11 @@ function SummaryPanel({ todayTransactions, totalIncome, totalExpense }) {
 
         <div className="flex gap-4 mt-4 pt-4 border-t border-gray-100 text-xs">
           <span className="text-[#22c55e] font-semibold">
-            Pemasukan : +{formatRp(totalIncome)}
+            Pemasukan : +{formatRp(summary?.totalIncome || 0)}
           </span>
 
           <span className="text-red-500 font-semibold">
-            Pengeluaran : -{formatRp(totalExpense)}
+            Pengeluaran : -{formatRp(summary?.totalExpense || 0)}
           </span>
         </div>
       </div>
@@ -325,7 +317,6 @@ function SummaryPanel({ todayTransactions, totalIncome, totalExpense }) {
    MAIN PAGE
 ========================= */
 export default function AddTransactionPage() {
-  const { transactions, addTransaction } = useTransactionContext()
   const navigate = useNavigate()
   const [type, setType]                 = useState('expense')
   const [selectedCategory, setSelectedCategory] = useState('Makanan')
@@ -333,27 +324,40 @@ export default function AddTransactionPage() {
   const [form, setForm]                 = useState({
     description: '',
     amount: '',
-    date: new Date().toLocaleDateString('id-ID'),
+    date: new Date().toISOString().split('T')[0],
     paymentMethod: 'Gopay/E-wallet',
   })
 
-  // Ambil transaksi hari ini dari Context
+  const { data: rawTransactions = [] } = useGetTransactions()
+  const { data: summary } = useGetTransactionSummary()
+  const { mutate: addTransaction } = useAddTransaction()
+
+  // Ambil transaksi hari ini dari server
   const todayLabel = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })
-  const TODAY_TRANSACTIONS = transactions.filter(t => t.date === todayLabel)
+  const TODAY_TRANSACTIONS = rawTransactions
+    .filter(t => new Date(t.date).toDateString() === new Date().toDateString())
+    .map(t => ({
+      id: t.id,
+      description: t.note || t.category,
+      amount: t.amount,
+      category: t.category,
+      type: t.type.toLowerCase(),
+      time: new Date(t.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      method: 'Transfer'
+    }))
 
   const handleSimpan = () => {
     if (!form.description || !form.amount) return
     addTransaction({
-      type,
+      type: type.toUpperCase(),
       description: form.description,
       amount:      Number(form.amount),
       category:    selectedCategory,
       method:      form.paymentMethod,
-      date:        todayLabel,
-      isImpulsive: false,
+      date:        form.date,
     })
     setSaved(true)
-    setForm({ description: '', amount: '', date: new Date().toLocaleDateString('id-ID'), paymentMethod: 'Gopay/E-wallet' })
+    setForm({ description: '', amount: '', date: new Date().toISOString().split('T')[0], paymentMethod: 'Gopay/E-wallet' })
     setSelectedCategory(type === 'expense' ? 'Makanan' : 'Gaji')
     setTimeout(() => setSaved(false), 2000)
   }
@@ -362,14 +366,6 @@ export default function AddTransactionPage() {
     type === 'expense'
       ? EXPENSE_CATEGORIES
       : INCOME_CATEGORIES
-
-  const totalIncome = TODAY_TRANSACTIONS
-    .filter(t => t.type === 'income')
-    .reduce((sum, t) => sum + t.amount, 0)
-
-  const totalExpense = TODAY_TRANSACTIONS
-    .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0)
 
   return (
     <div>
@@ -402,8 +398,7 @@ export default function AddTransactionPage() {
 
           <SummaryPanel
             todayTransactions={TODAY_TRANSACTIONS}
-            totalIncome={totalIncome}
-            totalExpense={totalExpense}
+            summary={summary}
           />
         </div>
       </div>
@@ -428,11 +423,7 @@ export default function AddTransactionPage() {
             </p>
 
             <p className="text-base font-black text-gray-900 mt-0.5">
-              {formatRp(4200000)}
-            </p>
-
-            <p className="text-[10px] text-[#22c55e] font-semibold mt-0.5">
-              12 Transaksi
+              {formatRp(summary?.totalIncome || 0)}
             </p>
           </div>
 
@@ -442,11 +433,7 @@ export default function AddTransactionPage() {
             </p>
 
             <p className="text-base font-black text-gray-900 mt-0.5">
-              {formatRp(1750000)}
-            </p>
-
-            <p className="text-[10px] text-red-500 font-semibold mt-0.5">
-              36 Transaksi
+              {formatRp(summary?.totalExpense || 0)}
             </p>
           </div>
         </div>
@@ -534,11 +521,11 @@ export default function AddTransactionPage() {
 
           <div className="flex gap-4 mt-3 pt-3 border-t border-gray-100 text-xs">
             <span className="text-[#22c55e] font-semibold">
-              +{formatRp(totalIncome)}
+              +{formatRp(summary?.totalIncome || 0)}
             </span>
 
             <span className="text-red-500 font-semibold">
-              -{formatRp(totalExpense)}
+              -{formatRp(summary?.totalExpense || 0)}
             </span>
           </div>
         </div>
