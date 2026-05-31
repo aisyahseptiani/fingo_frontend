@@ -1,9 +1,10 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine,
 } from 'recharts'
-import { CheckCircle, ChevronRight, Plus, TrendingUp, Zap, BarChart2, Target } from 'lucide-react'
+import { CheckCircle, ChevronRight, Plus, TrendingUp, Zap, BarChart2, Target, Loader2 } from 'lucide-react'
+import { predictIncomeAi } from '../../services/fingoAi'
 
 const formatRp    = (n) => new Intl.NumberFormat('id-ID').format(Number(n) || 0)
 const parseNum    = (s) => Number(String(s).replace(/\./g, '').replace(/[^0-9]/g, '')) || 0
@@ -22,14 +23,7 @@ const SOURCE_OPTIONS = [
   { value: 'Lainnya',           label: 'Lainnya',           color: '#64748b' },
 ]
 
-function predictNext4(weeklyData) {
-  const n = weeklyData.length
-  if (n < 2) return [0, 0, 0, 0]
-  const values = weeklyData.map(w => w.amount)
-  const trend  = (values[n - 1] - values[0]) / (n - 1)
-  const last   = values[n - 1]
-  return [1, 2, 3, 4].map(i => Math.round(last + trend * i * 0.5))
-}
+// Function predictNext4 removed as we use real AI prediction now
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null
@@ -74,12 +68,12 @@ function SourceSelect({ value, onChange }) {
 function OnboardingForm({ onComplete }) {
   const [weeks, setWeeks] = useState(() => {
     const saved = localStorage.getItem('fingo_income_predictor_draft')
-    return saved ? JSON.parse(saved) : [
-      { amount: '', source: '', label: '4 Minggu lalu' },
-      { amount: '', source: '', label: '3 Minggu lalu' },
-      { amount: '', source: '', label: '2 Minggu lalu' },
-      { amount: '', source: '', label: 'Minggu lalu'   },
-    ]
+    if (saved) return JSON.parse(saved);
+    const initialWeeks = [];
+    for (let i = 12; i >= 1; i--) {
+      initialWeeks.push({ amount: '', source: '', label: i === 1 ? 'Minggu lalu' : `${i} Minggu lalu` });
+    }
+    return initialWeeks;
   })
   const [error, setError] = useState('')
 
@@ -112,7 +106,7 @@ function OnboardingForm({ onComplete }) {
             Income Predictor
           </h1>
           <p className="text-gray-400 text-sm mt-0.5">
-            Masukkan data <strong className="text-gray-500">4 minggu terakhir</strong> untuk memulai
+            Masukkan data <strong className="text-gray-500">12 minggu terakhir</strong> untuk hasil AI yang akurat
           </p>
         </div>
       </div>
@@ -197,17 +191,49 @@ function PredictorDashboard({ historyData, onAddWeek, onReset }) {
   const [period, setPeriod]       = useState('weekly')
   const [saved, setSaved]         = useState(false)
 
-  const predictions = useMemo(() => predictNext4(historyData), [historyData])
-  const totalPred   = predictions.reduce((s, v) => s + v, 0)
+  const [predictions, setPredictions] = useState([0,0,0,0])
+  const [totalPred, setTotalPred] = useState(0)
+  const [direction, setDirection] = useState('Stable')
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchPrediction = async () => {
+      setIsLoading(true);
+      try {
+        const income_history = historyData.map(w => w.amount);
+        const last12 = income_history.slice(-12);
+        while(last12.length < 12) {
+           last12.unshift(last12[0] || 0);
+        }
+        
+        const data = await predictIncomeAi(last12);
+        if (isMounted && data.prediction_4_weeks_ahead) {
+          setPredictions(data.prediction_4_weeks_ahead);
+          setTotalPred(data.total_projected_income);
+          setDirection(data.income_direction);
+        }
+      } catch(e) {
+        console.error(e);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    fetchPrediction();
+    return () => { isMounted = false; };
+  }, [historyData]);
+
   const avg         = Math.round(historyData.reduce((s, w) => s + w.amount, 0) / historyData.length)
   const latest      = historyData[historyData.length - 1]?.amount ?? 0
-  const predNext    = predictions[0]
+  const predNext    = predictions[0] || 0
   const accuracy    = Math.min(97, 70 + historyData.length * 2)
 
   const chartData = useMemo(() => {
     const n    = historyData.length
-    const hist = historyData.map((w, i) => ({
-      label: i === n - 1 ? 'Mg ini' : `Mg ${n - i}`,
+    // Only display the last 8-12 weeks in chart so it doesn't get too cramped
+    const displayCount = Math.min(n, 12)
+    const hist = historyData.slice(-displayCount).map((w, i, arr) => ({
+      label: i === arr.length - 1 ? 'Mg ini' : `Mg ${arr.length - i}`,
       value: w.amount,
     }))
     const bridge = { label: 'Mg ini', value: latest, pred: latest }
@@ -272,8 +298,17 @@ function PredictorDashboard({ historyData, onAddWeek, onReset }) {
             </div>
             <div className="min-w-0">
               <p className="text-[10px] text-gray-400 font-medium leading-tight mb-0.5">{s.label}</p>
-              <p className={`text-base font-black ${s.valueColor}`}>{s.value}</p>
-              <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">{s.sub}</p>
+              {isLoading && (i === 1 || i === 2) ? (
+                <div className="flex items-center gap-1.5 py-1">
+                  <Loader2 size={14} className="animate-spin text-gray-300" />
+                  <span className="text-xs text-gray-400 font-medium">Menghitung...</span>
+                </div>
+              ) : (
+                <>
+                  <p className={`text-base font-black ${s.valueColor}`}>{s.value}</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5 leading-tight">{s.sub}</p>
+                </>
+              )}
             </div>
           </div>
         ))}
@@ -361,19 +396,41 @@ function PredictorDashboard({ historyData, onAddWeek, onReset }) {
         <div className="space-y-4">
           {/* Prediksi */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
-            <p className="text-[10px] font-bold text-yellow-500 uppercase tracking-widest mb-3">Prediksi 4 Minggu</p>
-            <div className="space-y-1.5">
-              {predictions.map((v, i) => (
-                <div key={i} className="flex items-center justify-between py-1">
-                  <span className="text-xs text-gray-600">{i === 0 ? 'Minggu depan (+1)' : `+${i + 1} minggu`}</span>
-                  <span className="text-xs font-black text-yellow-500">{formatShort(v)}</span>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[10px] font-bold text-yellow-500 uppercase tracking-widest">Prediksi 4 Minggu</p>
+              {isLoading && <Loader2 size={12} className="animate-spin text-yellow-500" />}
+            </div>
+            
+            {isLoading ? (
+               <div className="py-6 flex flex-col items-center justify-center gap-2">
+                 <Loader2 size={24} className="animate-spin text-yellow-500" />
+                 <p className="text-xs text-gray-400 text-center">AI sedang menganalisis data<br/>historis Anda...</p>
+               </div>
+            ) : (
+              <>
+                <div className="space-y-1.5">
+                  {predictions.map((v, i) => (
+                    <div key={i} className="flex items-center justify-between py-1">
+                      <span className="text-xs text-gray-600">{i === 0 ? 'Minggu depan (+1)' : `+${i + 1} minggu`}</span>
+                      <span className="text-xs font-black text-yellow-500">{formatShort(v)}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            <div className="border-t border-gray-100 mt-2.5 pt-2.5 flex items-center justify-between">
-              <span className="text-xs text-gray-500">Total 4 minggu</span>
-              <span className="text-xs font-black text-gray-900">{formatShort(totalPred)}</span>
-            </div>
+                <div className="border-t border-gray-100 mt-2.5 pt-2.5 flex items-center justify-between">
+                  <span className="text-xs text-gray-500">Total 4 minggu</span>
+                  <span className="text-xs font-black text-gray-900">{formatShort(totalPred)}</span>
+                </div>
+                <div className="mt-3 bg-gray-50 rounded-lg p-2.5 border border-gray-100">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <TrendingUp size={12} className={direction === 'Up' ? 'text-green-500' : direction === 'Down' ? 'text-red-500' : 'text-yellow-500'} />
+                    <span className="text-[10px] font-bold text-gray-600">Analisis Tren Fingo AI</span>
+                  </div>
+                  <p className="text-[10px] text-gray-500 leading-relaxed">
+                    Berdasarkan pola 12 minggu terakhir, prediksi tren pendapatan Anda menunjukkan arah <strong className="text-gray-700">{direction === 'Up' ? 'Naik' : direction === 'Down' ? 'Turun' : 'Stabil'}</strong>.
+                  </p>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Tambah minggu */}
@@ -408,33 +465,11 @@ function PredictorDashboard({ historyData, onAddWeek, onReset }) {
 // ── ROOT ──────────────────────────────────────────────────────────────────────
 export default function IncomePredictorPage() {
   const [historyData, setHistoryData] = useState(() => {
-<<<<<<< HEAD
-    // Load dari localStorage saat pertama render
-    const saved = localStorage.getItem('income_predictor_data')
-=======
     const saved = localStorage.getItem('fingo_income_predictor_data')
->>>>>>> 2c6eef8180c16e4a9bc8178918a2e6c080a60012
     return saved ? JSON.parse(saved) : null
   })
 
   const handleComplete = (data) => {
-<<<<<<< HEAD
-    localStorage.setItem('income_predictor_data', JSON.stringify(data))
-    localStorage.setItem('income_predictor_setup', 'true')
-    setHistoryData(data)
-  }
-
-  const handleAddWeek = (w) => {
-    const updated = [...historyData, w]
-    localStorage.setItem('income_predictor_data', JSON.stringify(updated))
-    setHistoryData(updated)
-  }
-
-  const handleReset = () => {
-    localStorage.removeItem('income_predictor_data')
-    localStorage.removeItem('income_predictor_setup')
-    setHistoryData(null)
-=======
     setHistoryData(data)
     localStorage.setItem('fingo_income_predictor_data', JSON.stringify(data))
   }
@@ -450,7 +485,7 @@ export default function IncomePredictorPage() {
   const handleReset = () => {
     setHistoryData(null)
     localStorage.removeItem('fingo_income_predictor_data')
->>>>>>> 2c6eef8180c16e4a9bc8178918a2e6c080a60012
+    localStorage.removeItem('fingo_income_predictor_draft')
   }
 
   if (!historyData) {

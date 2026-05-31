@@ -3,6 +3,8 @@ import { Send, Mic } from 'lucide-react'
 import fingoLogo from '../../assets/images/fingo-logo.png'
 
 import { useAuthContext } from '../../context/AuthContext'
+import { useDashboard } from '../../hooks/useDashboard'
+import { chatWithAi } from '../../services/fingoAi'
 
 const QUICK_PROMPTS = [
   'Ringkasan keuanganku', 'Tips hemat bulan ini',
@@ -25,15 +27,14 @@ function formatMessage(text) {
 
 export default function AIAssistantPage() {
   const { user } = useAuthContext()
+  const { data: dashboardData } = useDashboard()
   
-  const INITIAL_MESSAGES = [
+  const [messages, setMessages] = useState([
     {
-      id: 1, role: 'ai', time: '09:30',
-      text: `Halo ${user?.name?.split(' ')[0] ?? 'Pengguna'}! Aku Fingo AI, asisten keuangan pribadimu. Aku terhubung dengan data keuanganmu dan siap membantu analisis, memberikan saran, dan menjawab seputar keuangan.\n\nBerdasarkan data terbaru, saldo kamu saat ini **Rp 2.45 juta** dengan pengeluaran bulan ini **Rp 1.75 juta**. Ada yang bisa aku bantu?`,
-    },
-  ]
-
-  const [messages, setMessages] = useState(INITIAL_MESSAGES)
+      id: 1, role: 'ai', time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      text: `Halo ${user?.name?.split(' ')[0] ?? 'Pengguna'}! Aku Fingo AI, asisten keuangan pribadimu. Aku terhubung dengan data keuanganmu dan siap membantu analisis, memberikan saran, dan menjawab seputar keuangan. Sedang memuat data keuanganmu...`,
+    }
+  ])
   const [input, setInput]       = useState('')
   const [isTyping, setIsTyping] = useState(false)
 
@@ -41,25 +42,55 @@ export default function AIAssistantPage() {
   const bottomRef = useRef(null)
 
   useEffect(() => {
+    if (dashboardData) {
+      setMessages(prev => {
+        const newMsgs = [...prev]
+        if (newMsgs[0] && newMsgs[0].id === 1) {
+          const balanceStr = new Intl.NumberFormat('id-ID').format(dashboardData.balance || 0)
+          const expenseStr = new Intl.NumberFormat('id-ID').format(dashboardData.expense || 0)
+          newMsgs[0].text = `Halo ${user?.name?.split(' ')[0] ?? 'Pengguna'}! Aku Fingo AI, asisten keuangan pribadimu. Aku terhubung dengan data keuanganmu dan siap membantu analisis, memberikan saran, dan menjawab seputar keuangan.\n\nBerdasarkan data terbaru, saldo kamu saat ini **Rp ${balanceStr}** dengan pengeluaran bulan ini **Rp ${expenseStr}**. Ada yang bisa aku bantu?`
+        }
+        return newMsgs
+      })
+    }
+  }, [dashboardData, user?.name])
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, isTyping])
 
-  const sendMessage = (text) => {
+  const sendMessage = async (text) => {
     if (!text.trim()) return
     const t = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
     setMessages(prev => [...prev, { id: Date.now(), role: 'user', time: t, text }])
     setInput('')
     setIsTyping(true)
     setTimeout(() => inputRef.current?.focus(), 100)
-    setTimeout(() => {
-      setIsTyping(false)
+    
+    try {
+      const financialContext = {
+        income: dashboardData?.income || 0,
+        expense: dashboardData?.expense || 0,
+        budget_remaining: dashboardData?.balance || 0,
+        impulsive_count: dashboardData?.impulsiveCount || 0
+      };
+      const response = await chatWithAi(text, financialContext);
+      
       const t2 = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
       setMessages(prev => [...prev, {
         id: Date.now() + 1, role: 'ai', time: t2,
-        text: 'Terima kasih atas pertanyaanmu! Berdasarkan data keuanganmu, aku sedang menganalisis pola pengeluaran dan pemasukan kamu. Fitur ini akan terhubung penuh ke AI saat backend tersedia.',
+        text: response.reply || 'Maaf, saya tidak mengerti maksud Anda.',
       }])
+    } catch (error) {
+      const t2 = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+      setMessages(prev => [...prev, {
+        id: Date.now() + 1, role: 'ai', time: t2,
+        text: 'Maaf, terjadi kesalahan saat menghubungi server Fingo AI.',
+      }])
+    } finally {
+      setIsTyping(false)
       setTimeout(() => inputRef.current?.focus(), 100)
-    }, 1500)
+    }
   }
 
   const handleSubmit = (e) => {
@@ -69,7 +100,16 @@ export default function AIAssistantPage() {
   }
 
   const clearChat = () => {
-    setMessages(INITIAL_MESSAGES)
+    const t = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+    const balanceStr = new Intl.NumberFormat('id-ID').format(dashboardData?.balance || 0)
+    const expenseStr = new Intl.NumberFormat('id-ID').format(dashboardData?.expense || 0)
+    
+    setMessages([
+      {
+        id: 1, role: 'ai', time: t,
+        text: `Halo ${user?.name?.split(' ')[0] ?? 'Pengguna'}! Aku Fingo AI, asisten keuangan pribadimu. Aku terhubung dengan data keuanganmu dan siap membantu analisis, memberikan saran, dan menjawab seputar keuangan.\n\nBerdasarkan data terbaru, saldo kamu saat ini **Rp ${balanceStr}** dengan pengeluaran bulan ini **Rp ${expenseStr}**. Ada yang bisa aku bantu?`,
+      }
+    ])
     setTimeout(() => inputRef.current?.focus(), 100)
   }
 

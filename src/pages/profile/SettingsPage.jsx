@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, ChevronRight, User, Bell, Shield,
   Settings, Link, Lock, Smartphone, Clock,
@@ -135,6 +136,7 @@ function MainSettings({ onNav }) {
 // ════════════════════════════════════════════════════════════════
 function AkunSettings({ onBack }) {
   const { user } = useAuthContext()
+  const navigate = useNavigate()
   const nameParts = (user?.name || '').split(' ')
   
   const [form, setForm] = useState(() => {
@@ -164,6 +166,7 @@ function AkunSettings({ onBack }) {
     if (!form.firstName || !form.email || !form.phone) return
     localStorage.setItem('fingo_user_profile', JSON.stringify(form))
     alert('Profil berhasil disimpan!')
+    navigate('/')
   }
 
   const handlePhotoUpload = () => {
@@ -1783,7 +1786,16 @@ function IntegrasiSettings({ onBack }) {
 // MAIN EXPORT
 // ════════════════════════════════════════════════════════════════
 export default function SettingsPage() {
+  const location = useLocation()
   const [page, setPage] = useState('main')
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const tab = params.get('tab')
+    if (tab && ['akun', 'notifikasi', 'keamanan', 'preferensi', 'integrasi'].includes(tab)) {
+      setPage(tab)
+    }
+  }, [location.search])
 
   const pages = {
     main:        <MainSettings onNav={setPage} />,

@@ -104,7 +104,7 @@ export default function LoginPage() {
             try {
               const res = await signIn.social({ 
                 provider: 'google',
-                callbackURL: window.location.origin + '/',
+                callbackURL: window.location.origin + '/settings?tab=akun',
                 // Terkadang better-auth meneruskan argumen ekstra ke URL OAuth
                 prompt: 'select_account'
               })
