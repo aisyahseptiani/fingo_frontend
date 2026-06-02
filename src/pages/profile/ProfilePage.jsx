@@ -61,6 +61,7 @@ export default function ProfilePage() {
   // =========================
   // NEW STATE
   // =========================
+  const localAvatar = localStorage.getItem('fingo_user_avatar') || user?.image;
   const [showTargetModal, setShowTargetModal] = useState(false)
   const [targetDescription, setTargetDescription] = useState('')
   const [targetAmount, setTargetAmount] = useState('')
@@ -109,8 +110,8 @@ export default function ProfilePage() {
 
         {/* Desktop layout */}
         <div className="hidden lg:flex items-center gap-6">
-          {user?.image ? (
-            <img src={user.image} alt={user?.name} className="w-28 h-28 rounded-2xl object-cover shrink-0" />
+          {localAvatar ? (
+            <img src={localAvatar} alt={user?.name} className="w-28 h-28 rounded-2xl object-cover shrink-0" />
           ) : (
             <div className="w-28 h-28 rounded-2xl bg-gray-100 shrink-0 flex items-center justify-center text-4xl font-black text-gray-300">
               {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}
@@ -147,8 +148,8 @@ export default function ProfilePage() {
         {/* Mobile layout */}
         <div className="lg:hidden">
           <div className="flex items-start gap-4">
-            {user?.image ? (
-              <img src={user.image} alt={user?.name} className="w-16 h-16 rounded-2xl object-cover shrink-0" />
+            {localAvatar ? (
+              <img src={localAvatar} alt={user?.name} className="w-16 h-16 rounded-2xl object-cover shrink-0" />
             ) : (
               <div className="w-16 h-16 rounded-2xl bg-gray-100 shrink-0 flex items-center justify-center text-2xl font-black text-gray-300">
                 {user?.name?.charAt(0)?.toUpperCase() ?? 'U'}
