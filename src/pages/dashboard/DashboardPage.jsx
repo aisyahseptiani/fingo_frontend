@@ -11,7 +11,7 @@ import StatCard from '../../components/dashboard/StatCard'
 import TransactionTable from '../../components/dashboard/TransactionTable'
 import BudgetDonutChart from '../../components/dashboard/BudgetDonutChart'
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer
 } from 'recharts'
 import { useUserSetup } from '../../hooks/useUserSetup'
@@ -71,13 +71,13 @@ export default function DashboardPage() {
         {/* 4 Stat Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           <StatCard title="Saldo Tersedia"
-            value={isLoading ? '...' : (hideBalance ? 'Rp •••••••' : formatRupiah(data?.balance))}
+            value={isLoading ? '...' : (hideBalance ? 'Rp •••••••' : formatRupiah(data?.balance, prefs))}
             subtitle={data?.monthLabel || "Bulan ini"} subtitleColor="text-[#22c55e]" borderColor="border-l-[#22c55e]" />
           <StatCard title="Pemasukan Bulan ini"
-            value={isLoading ? '...' : formatRupiah(data?.income)}
+            value={isLoading ? '...' : formatRupiah(data?.income, prefs)}
             subtitle={data?.incomeDiffLabel || ""} subtitleColor="text-blue-500" borderColor="border-l-blue-500" />
           <StatCard title="Pengeluaran Bulan ini"
-            value={isLoading ? '...' : formatRupiah(data?.expense)}
+            value={isLoading ? '...' : formatRupiah(data?.expense, prefs)}
             subtitle={data?.budgetUsedLabel || ""} subtitleColor="text-red-500" borderColor="border-l-red-500" />
           <StatCard title="Transaksi Implusif"
             value={isLoading ? '...' : `${data?.impulsiveCount ?? 0}x`}
@@ -86,16 +86,16 @@ export default function DashboardPage() {
 
         {/* Baris tengah */}
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5">
-          <TransactionTable transactions={data?.recentTransactions ?? []} isLoading={isLoading} />
+          <TransactionTable transactions={data?.recentTransactions ?? []} isLoading={isLoading} prefs={prefs} />
           <div className="space-y-4">
             {hasBudget
-              ? <BudgetDonutChart data={data?.budgetByCategory ?? []} total={data?.totalBudget ?? 0} />
+              ? <BudgetDonutChart data={data?.budgetByCategory ?? []} total={data?.totalBudget ?? 0} prefs={prefs} />
               : <BudgetSetupCard />
             }
             {hasIncome ? (
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
                 <p className="text-[10px] font-bold text-[#22c55e] tracking-widest uppercase mb-1">Prediksi Income Minggu Ini</p>
-                <p className="text-2xl font-black text-gray-900">{formatRupiah(data?.incomePrediction ?? 1100000)}</p>
+                <p className="text-2xl font-black text-gray-900">{formatRupiah(data?.incomePrediction ?? 1100000, prefs)}</p>
                 <p className="text-xs text-gray-400 mt-0.5 mb-3">
                   <span className="text-[#22c55e] font-semibold">Berdasarkan AI</span>
                 </p>
@@ -131,30 +131,44 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Area chart */}
+        {/* Area / Bar chart desktop */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
           <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={data?.weeklyChart ?? DUMMY_WEEKLY}>
-              <defs>
-                <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#22c55e" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-              <YAxis hide />
-              <Tooltip formatter={(v) => formatRupiah(v)} />
-              <Legend formatter={(val) =>
-                <span className="text-xs text-gray-500">{val === 'income' ? 'Pemasukan' : 'Pengeluaran'}</span>
-              } />
-              <Area type="monotone" dataKey="income" stroke="#22c55e" strokeWidth={2} fill="url(#colorIncome)" name="income" dot={false} />
-              <Area type="monotone" dataKey="expense" stroke="#ef4444" strokeWidth={2} fill="url(#colorExpense)" name="expense" dot={false} />
-            </AreaChart>
+            {prefs.grafik === 'Garis (Line)' ? (
+              <AreaChart data={data?.weeklyChart ?? DUMMY_WEEKLY}>
+                <defs>
+                  <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                <YAxis hide />
+                <Tooltip formatter={(v) => formatRupiah(v, prefs)} />
+                <Legend formatter={(val) =>
+                  <span className="text-xs text-gray-500">{val === 'income' ? 'Pemasukan' : 'Pengeluaran'}</span>
+                } />
+                <Area type="monotone" dataKey="income" stroke="#22c55e" strokeWidth={2} fill="url(#colorIncome)" name="income" dot={false} />
+                <Area type="monotone" dataKey="expense" stroke="#ef4444" strokeWidth={2} fill="url(#colorExpense)" name="expense" dot={false} />
+              </AreaChart>
+            ) : (
+              <BarChart data={data?.weeklyChart ?? DUMMY_WEEKLY}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                <YAxis hide />
+                <Tooltip formatter={(v) => formatRupiah(v, prefs)} />
+                <Legend formatter={(val) =>
+                  <span className="text-xs text-gray-500">{val === 'income' ? 'Pemasukan' : 'Pengeluaran'}</span>
+                } />
+                <Bar dataKey="income" fill="#22c55e" radius={[4, 4, 0, 0]} name="income" />
+                <Bar dataKey="expense" fill="#ef4444" radius={[4, 4, 0, 0]} name="expense" />
+              </BarChart>
+            )}
           </ResponsiveContainer>
         </div>
       </div>
@@ -176,17 +190,17 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white rounded-xl border border-gray-100 border-l-4 border-l-[#22c55e] p-3.5 shadow-sm">
             <p className="text-xs text-gray-400 mb-1">Saldo Tersedia</p>
-            <p className="text-base font-black text-gray-900 leading-tight">{isLoading ? '...' : (hideBalance ? 'Rp •••••••' : formatRupiah(data?.balance))}</p>
+            <p className="text-base font-black text-gray-900 leading-tight">{isLoading ? '...' : (hideBalance ? 'Rp •••••••' : formatRupiah(data?.balance, prefs))}</p>
             <p className="text-[10px] text-[#22c55e] font-semibold mt-1">{data?.monthLabel || "Bulan ini"}</p>
           </div>
           <div className="bg-white rounded-xl border border-gray-100 border-l-4 border-l-blue-500 p-3.5 shadow-sm">
             <p className="text-xs text-gray-400 mb-1">Pemasukan</p>
-            <p className="text-base font-black text-gray-900 leading-tight">{isLoading ? '...' : formatRupiah(data?.income)}</p>
+            <p className="text-base font-black text-gray-900 leading-tight">{isLoading ? '...' : formatRupiah(data?.income, prefs)}</p>
             <p className="text-[10px] text-blue-500 font-semibold mt-1">{data?.incomeDiffLabel || ""}</p>
           </div>
           <div className="bg-white rounded-xl border border-gray-100 border-l-4 border-l-red-500 p-3.5 shadow-sm">
             <p className="text-xs text-gray-400 mb-1">Pengeluaran</p>
-            <p className="text-base font-black text-gray-900 leading-tight">{isLoading ? '...' : formatRupiah(data?.expense)}</p>
+            <p className="text-base font-black text-gray-900 leading-tight">{isLoading ? '...' : formatRupiah(data?.expense, prefs)}</p>
             <p className="text-[10px] text-red-500 font-semibold mt-1">{data?.budgetUsedLabel || ""}</p>
           </div>
           <div className="bg-white rounded-xl border border-gray-100 border-l-4 border-l-amber-500 p-3.5 shadow-sm">
@@ -209,7 +223,7 @@ export default function DashboardPage() {
             </Link>
           </div>
           <div className="divide-y divide-gray-50">
-            {(data?.recentTransactions ?? []).slice(0, 4).map(trx => (
+            {(data?.recentTransactions ?? []).slice(0, prefs.jumlahTx === '3' ? 3 : prefs.jumlahTx === '10' ? 10 : prefs.jumlahTx === 'Semua' ? 999 : 5).map(trx => (
               <div key={trx.id} className="flex items-center gap-3 px-4 py-3">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold
                   ${trx.type === 'income' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-500'}`}>
@@ -220,7 +234,7 @@ export default function DashboardPage() {
                   <p className="text-xs text-gray-400">{trx.category}</p>
                 </div>
                 <span className={`text-sm font-bold shrink-0 ${trx.type === 'income' ? 'text-[#22c55e]' : 'text-red-500'}`}>
-                  {trx.type === 'income' ? '+' : '-'}{formatRupiah(trx.amount)}
+                  {trx.type === 'income' ? '+' : '-'}{formatRupiah(trx.amount, prefs)}
                 </span>
               </div>
             ))}
@@ -229,7 +243,7 @@ export default function DashboardPage() {
 
         {/* Donut chart */}
         {hasBudget
-          ? <BudgetDonutChart data={data?.budgetByCategory ?? []} total={data?.totalBudget ?? 0} />
+          ? <BudgetDonutChart data={data?.budgetByCategory ?? []} total={data?.totalBudget ?? 0} prefs={prefs} />
           : <BudgetSetupCard />
         }
 
@@ -240,7 +254,7 @@ export default function DashboardPage() {
               Prediksi Income Minggu Ini
             </p>
             <p className="text-2xl font-black text-gray-900">
-              {formatRupiah(data?.incomePrediction ?? 1100000)}
+              {formatRupiah(data?.incomePrediction ?? 1100000, prefs)}
             </p>
             <p className="text-xs text-gray-400 mt-0.5 mb-3">
               <span className="text-[#22c55e] font-semibold">Berdasarkan AI</span>
@@ -289,24 +303,35 @@ export default function DashboardPage() {
             </div>
           </div>
           <ResponsiveContainer width="100%" height={140}>
-            <AreaChart data={data?.weeklyChart ?? DUMMY_WEEKLY}>
-              <defs>
-                <linearGradient id="mIncome" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#22c55e" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="mExpense" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
-              <XAxis dataKey="week" tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-              <YAxis hide />
-              <Tooltip formatter={(v) => formatRupiah(v)} />
-              <Area type="monotone" dataKey="income" stroke="#22c55e" strokeWidth={2} fill="url(#mIncome)" name="income" dot={false} />
-              <Area type="monotone" dataKey="expense" stroke="#ef4444" strokeWidth={2} fill="url(#mExpense)" name="expense" dot={false} />
-            </AreaChart>
+            {prefs.grafik === 'Garis (Line)' ? (
+              <AreaChart data={data?.weeklyChart ?? DUMMY_WEEKLY}>
+                <defs>
+                  <linearGradient id="mIncome" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                  </linearGradient>
+                  <linearGradient id="mExpense" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                <XAxis dataKey="week" tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                <YAxis hide />
+                <Tooltip formatter={(v) => formatRupiah(v, prefs)} />
+                <Area type="monotone" dataKey="income" stroke="#22c55e" strokeWidth={2} fill="url(#mIncome)" name="income" dot={false} />
+                <Area type="monotone" dataKey="expense" stroke="#ef4444" strokeWidth={2} fill="url(#mExpense)" name="expense" dot={false} />
+              </AreaChart>
+            ) : (
+              <BarChart data={data?.weeklyChart ?? DUMMY_WEEKLY}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                <XAxis dataKey="week" tick={{ fontSize: 10, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                <YAxis hide />
+                <Tooltip formatter={(v) => formatRupiah(v, prefs)} />
+                <Bar dataKey="income" fill="#22c55e" radius={[2, 2, 0, 0]} name="income" />
+                <Bar dataKey="expense" fill="#ef4444" radius={[2, 2, 0, 0]} name="expense" />
+              </BarChart>
+            )}
           </ResponsiveContainer>
         </div>
 

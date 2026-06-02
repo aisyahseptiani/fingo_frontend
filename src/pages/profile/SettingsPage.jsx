@@ -7,7 +7,7 @@ import {
   Sliders, Wallet, Plus
 } from 'lucide-react'
 import { useAuthContext } from '../../context/AuthContext'
-import { useGetProfile, useUpdateProfile } from '../../hooks/useProfile'
+import { useGetProfile, useUpdateProfile, useGetSessions, useRevokeSession } from '../../hooks/useProfile'
 import { authClient } from '../../lib/auth-client'
 import api from '../../services/api'
 
@@ -1091,20 +1091,15 @@ function TwoFAPage({ onBack }) {
 }
 
 function SesiAktifPage({ onBack }) {
-  const [sessions, setSessions] = useState([
-    {
-      id: 1,
-      device: 'Chrome di Windows 11',
-      info: 'ID Bandung, Indonesia · IP 112.215.xxx.xxx · Sekarang aktif',
-      current: true,
-    },
-    {
-      id: 2,
-      device: 'Fingo Mobile — Android',
-      info: 'ID Bandung, Indonesia · IP 112.215.xxx.xxx · Sekarang aktif',
-      current: false,
-    },
-  ])
+  const { user } = useAuthContext()
+  const { data: sessions = [], isLoading } = useGetSessions(user?.id)
+  const { mutate: revoke } = useRevokeSession(user?.id)
+
+  const handleRevoke = (token) => {
+    if (confirm('Yakin ingin mengeluarkan perangkat ini?')) {
+      revoke(token)
+    }
+  }
 
   return (
     <div className="p-6">
@@ -1177,143 +1172,43 @@ function SesiAktifPage({ onBack }) {
 
         {/* List */}
         <div className="space-y-3">
-          {sessions.map((s) => (
-            <div
-              key={s.id}
-              className="
-                flex items-start sm:items-center
-                gap-3
-
-                p-4
-
-                rounded-2xl
-                border border-gray-100
-              "
-            >
-
-              {/* Icon */}
-              <div
-                className="
-                  w-10 h-10
-
-                  rounded-xl
-                  bg-gray-100
-
-                  flex items-center justify-center
-
-                  shrink-0
-                "
-              >
-                <Smartphone
-                  size={18}
-                  className="text-gray-500"
-                />
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 text-sm leading-snug">
-                  {s.device}
-                </p>
-
-                <p className="text-[11px] text-gray-400 mt-1 leading-relaxed break-words">
-                  {s.info}
-                </p>
-
-                {/* Mobile Action */}
-                <div className="mt-3 sm:hidden">
-                  {s.current ? (
-                    <span
-                      className="
-                        inline-flex items-center
-
-                        px-3 py-1.5
-
-                        rounded-xl
-
-                        bg-[#22c55e]/10
-
-                        text-[#22c55e]
-                        text-[11px]
-                        font-semibold
-                      "
-                    >
-                      Perangkat Ini
-                    </span>
-                  ) : (
+          {isLoading ? (
+            <p className="text-center text-sm text-gray-500 py-4">Memuat sesi...</p>
+          ) : sessions.length === 0 ? (
+            <p className="text-center text-sm text-gray-500 py-4">Tidak ada sesi aktif.</p>
+          ) : (
+            sessions.map((s) => (
+              <div key={s.id} className="flex items-start sm:items-center gap-3 p-4 rounded-2xl border border-gray-100">
+                <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+                  <Smartphone size={18} className="text-gray-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-gray-900 text-sm leading-snug">
+                    {s.userAgent?.includes('Mobile') ? 'Mobile Device' : 'Desktop Browser'}
+                  </p>
+                  <p className="text-[11px] text-gray-400 mt-1 leading-relaxed break-words">
+                    IP: {s.ipAddress || 'Unknown'} · {new Date(s.createdAt).toLocaleString()}
+                  </p>
+                  <div className="mt-3 sm:hidden">
                     <button
-                      onClick={() =>
-                        setSessions((p) =>
-                          p.filter((x) => x.id !== s.id)
-                        )
-                      }
-                      className="
-                        px-3 py-1.5
-
-                        rounded-xl
-
-                        bg-red-50
-
-                        text-red-500
-                        text-[11px]
-                        font-semibold
-
-                        hover:bg-red-100
-                        transition-colors
-                      "
+                      onClick={() => handleRevoke(s.token)}
+                      className="px-3 py-1.5 rounded-xl bg-red-50 text-red-500 text-[11px] font-semibold hover:bg-red-100 transition-colors"
                     >
                       Keluarkan
                     </button>
-                  )}
+                  </div>
                 </div>
-              </div>
-
-              {/* Desktop Action */}
-              <div className="hidden sm:block shrink-0">
-                {s.current ? (
-                  <span
-                    className="
-                      px-3 py-1.5
-
-                      rounded-xl
-
-                      bg-[#22c55e]/10
-
-                      text-[#22c55e]
-                      text-xs
-                      font-semibold
-                    "
-                  >
-                    Perangkat Ini
-                  </span>
-                ) : (
+                <div className="hidden sm:block shrink-0">
                   <button
-                    onClick={() =>
-                      setSessions((p) =>
-                        p.filter((x) => x.id !== s.id)
-                      )
-                    }
-                    className="
-                      px-3 py-1.5
-
-                      rounded-xl
-
-                      bg-red-50
-
-                      text-red-500
-                      text-xs
-                      font-semibold
-
-                      hover:bg-red-100
-                      transition-colors
-                    "
+                    onClick={() => handleRevoke(s.token)}
+                    className="px-3 py-1.5 rounded-xl bg-red-50 text-red-500 text-xs font-semibold hover:bg-red-100 transition-colors"
                   >
                     Keluarkan
                   </button>
-                )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </div>
     </div>
@@ -1321,38 +1216,15 @@ function SesiAktifPage({ onBack }) {
 }
 
 function RiwayatAktivitasPage({ onBack }) {
-  const LOGS = [
-    {
-      label: 'Login berhasil',
-      desc: 'Chrome · Bandung · Hari ini, 08:42',
-      status: 'Aman',
-      color: 'bg-green-100 text-green-700',
-    },
-    {
-      label: 'Verifikasi 2FA diminta',
-      desc: 'iPhone 15 · Bandung · Kemarin, 19:15',
-      status: 'Aman',
-      color: 'bg-green-100 text-green-700',
-    },
-    {
-      label: 'Percobaan login gagal (3×)',
-      desc: 'Firefox · Jakarta · 3 hari lalu, 02:31',
-      status: 'Diblokir',
-      color: 'bg-red-100 text-red-600',
-    },
-    {
-      label: 'Email terverifikasi',
-      desc: 'aisyah@example.com · 7 hari lalu',
-      status: 'Sukses',
-      color: 'bg-green-100 text-green-700',
-    },
-    {
-      label: '2FA diaktifkan',
-      desc: 'Via SMS OTP · 14 hari lalu',
-      status: 'Sukses',
-      color: 'bg-green-100 text-green-700',
-    },
-  ]
+  const { user } = useAuthContext()
+  const { data: sessions = [], isLoading } = useGetSessions(user?.id)
+
+  const LOGS = sessions.map(s => ({
+    label: 'Login perangkat baru',
+    desc: `${s.userAgent?.includes('Mobile') ? 'Mobile Device' : 'Desktop Browser'} · IP: ${s.ipAddress} · ${new Date(s.createdAt).toLocaleString()}`,
+    status: 'Sukses',
+    color: 'bg-green-100 text-green-700',
+  }))
 
   return (
     <div className="p-6">

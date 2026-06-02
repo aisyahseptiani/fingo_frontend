@@ -12,7 +12,14 @@ const CATEGORY_COLORS = {
   Lainnya:      'bg-gray-100 text-gray-600',
 }
 
-export default function TransactionTable({ transactions = [], isLoading }) {
+export default function TransactionTable({ transactions = [], isLoading, prefs = {} }) {
+  let displayCount = 5; // default 5
+  if (prefs.jumlahTx) {
+    if (prefs.jumlahTx === '3') displayCount = 3;
+    if (prefs.jumlahTx === '10') displayCount = 10;
+    if (prefs.jumlahTx === 'Semua') displayCount = 999;
+  }
+  const displayedTx = transactions.slice(0, displayCount);
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -45,7 +52,7 @@ export default function TransactionTable({ transactions = [], isLoading }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {transactions.map((trx) => (
+            {displayedTx.map((trx) => (
               <tr key={trx.id} className="hover:bg-gray-50/60 transition-colors">
                 <td className="px-5 py-3.5 font-medium text-gray-800">{trx.description}</td>
                 <td className="px-3 py-3.5">
@@ -55,7 +62,7 @@ export default function TransactionTable({ transactions = [], isLoading }) {
                 </td>
                 <td className="px-3 py-3.5 text-gray-400">{formatDateShort(trx.date)}</td>
                 <td className={`px-5 py-3.5 text-right font-semibold ${trx.type === 'income' ? 'text-[#22c55e]' : 'text-red-500'}`}>
-                  {trx.type === 'income' ? '+' : '-'}{formatRupiah(trx.amount)}
+                  {trx.type === 'income' ? '+' : '-'}{formatRupiah(trx.amount, prefs)}
                 </td>
               </tr>
             ))}

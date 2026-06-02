@@ -71,3 +71,30 @@ export const changePassword = async (req, res) => {
         res.status(400).json({ error: error.message || "Failed to change password" });
     }
 };
+
+export const getSessions = async (req, res) => {
+    try {
+        const sessions = await prisma.session.findMany({
+            where: { userId: req.user.id },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json(sessions);
+    } catch (error) {
+        console.error("Error getting sessions:", error);
+        res.status(500).json({ error: "Failed to get sessions" });
+    }
+};
+
+export const revokeSession = async (req, res) => {
+    try {
+        const { token } = req.params;
+        await auth.api.revokeSession({
+            headers: req.headers,
+            body: { token }
+        });
+        res.json({ message: "Session revoked successfully" });
+    } catch (error) {
+        console.error("Error revoking session:", error);
+        res.status(400).json({ error: error.message || "Failed to revoke session" });
+    }
+};

@@ -28,3 +28,27 @@ export const useUpdateProfile = (userId) => {
         }
     });
 };
+
+export const useGetSessions = (userId) => {
+    return useQuery({
+        queryKey: ['userSessions', userId],
+        queryFn: async () => {
+            const { data } = await api.get('/user/sessions');
+            return data;
+        },
+        enabled: !!userId,
+    });
+};
+
+export const useRevokeSession = (userId) => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: async (token) => {
+            const { data } = await api.delete(`/user/sessions/${token}`);
+            return data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['userSessions', userId] });
+        }
+    });
+};
