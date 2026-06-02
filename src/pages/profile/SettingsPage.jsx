@@ -9,6 +9,7 @@ import {
 import { useAuthContext } from '../../context/AuthContext'
 import { useGetProfile, useUpdateProfile } from '../../hooks/useProfile'
 import { authClient } from '../../lib/auth-client'
+import api from '../../services/api'
 
 // ─── Toggle ─────────────────────────────────────────────────────
 function Toggle({ checked, onChange }) {
@@ -140,8 +141,8 @@ function AkunSettings({ onBack }) {
   const { user } = useAuthContext()
   const navigate = useNavigate()
   
-  const { data: profile, isLoading } = useGetProfile()
-  const { mutate: updateProfile, isPending } = useUpdateProfile()
+  const { data: profile, isLoading } = useGetProfile(user?.id)
+  const { mutate: updateProfile, isPending } = useUpdateProfile(user?.id)
 
   const [form, setForm] = useState({
     firstName: '',
@@ -209,6 +210,7 @@ function AkunSettings({ onBack }) {
         reader.onload = async (ev) => {
           const base64 = ev.target.result;
           await authClient.updateUser({ image: base64 });
+          window.location.reload();
         }
         reader.readAsDataURL(file)
       }
@@ -218,6 +220,7 @@ function AkunSettings({ onBack }) {
 
   const handlePhotoRemove = async () => {
     await authClient.updateUser({ image: '' });
+    window.location.reload();
   }
 
   return (
@@ -566,10 +569,12 @@ function AkunSettings({ onBack }) {
 // NOTIFIKASI
 // ════════════════════════════════════════════════════════════════
 function NotifikasiSettings({ onBack }) {
+  const { user } = useAuthContext()
+  const { data: profile } = useGetProfile(user?.id)
+  const { mutate: updateProfile } = useUpdateProfile(user?.id)
+
   const [notifs, setNotifs] = useState(() => {
-    const saved = localStorage.getItem('fingo_notif_settings')
-    if (saved) return JSON.parse(saved)
-    return {
+    return profile?.notifications || {
       all: true,
       impulsif: true,
       budget: true,
@@ -581,6 +586,12 @@ function NotifikasiSettings({ onBack }) {
     }
   })
 
+  useEffect(() => {
+    if (profile?.notifications) {
+      setNotifs(profile.notifications)
+    }
+  }, [profile])
+
   const toggle = (key) =>
     setNotifs((prev) => {
       const next = { ...prev, [key]: !prev[key] }
@@ -588,7 +599,7 @@ function NotifikasiSettings({ onBack }) {
          const val = next.all;
          Object.keys(next).forEach(k => next[k] = val);
       }
-      localStorage.setItem('fingo_notif_settings', JSON.stringify(next))
+      updateProfile({ notifications: next })
       return next
     })
 
@@ -826,17 +837,17 @@ function PasswordPage({ onBack }) {
        return;
     }
     setLoading(true);
-    const { data, error } = await authClient.changePassword({
-       newPassword: form.newPw,
-       currentPassword: form.current,
-       revokeOtherSessions: true
-    });
-    setLoading(false);
-    if (error) {
-       alert("Gagal memperbarui sandi: " + error.message);
-    } else {
-       alert('Sandi berhasil diperbarui');
-       onBack();
+    try {
+        await api.post('/user/change-password', {
+           newPassword: form.newPw,
+           currentPassword: form.current
+        });
+        alert('Sandi berhasil diperbarui');
+        onBack();
+    } catch (error) {
+        alert("Gagal memperbarui sandi: " + (error.response?.data?.error || error.message));
+    } finally {
+        setLoading(false);
     }
   }
 
@@ -1605,10 +1616,12 @@ function KeamananSettings({ onBack }) {
 // PREFERENSI
 // ════════════════════════════════════════════════════════════════
 function PreferensiSettings({ onBack }) {
+  const { user } = useAuthContext()
+  const { data: profile } = useGetProfile(user?.id)
+  const { mutate: updateProfile } = useUpdateProfile(user?.id)
+
   const [prefs, setPrefs] = useState(() => {
-    const saved = localStorage.getItem('fingo_prefs_settings')
-    if (saved) return JSON.parse(saved)
-    return {
+    return profile?.preferences || {
       grafik: 'Gelap',
       perPage: '20',
       formatPendek: true,
@@ -1618,10 +1631,16 @@ function PreferensiSettings({ onBack }) {
     }
   })
 
+  useEffect(() => {
+    if (profile?.preferences) {
+      setPrefs(profile.preferences)
+    }
+  }, [profile])
+
   const setValue = (key, value) => {
     setPrefs((prev) => {
       const next = { ...prev, [key]: value }
-      localStorage.setItem('fingo_prefs_settings', JSON.stringify(next))
+      updateProfile({ preferences: next })
       return next
     })
   }

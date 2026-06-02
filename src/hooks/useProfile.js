@@ -2,9 +2,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
 import { authClient } from '../lib/auth-client';
 
-export const useGetProfile = () => {
+export const useGetProfile = (userId) => {
     return useQuery({
-        queryKey: ['userProfile'],
+        queryKey: ['userProfile', userId],
         queryFn: async () => {
             const { data } = await api.get('/user/profile');
             return data;
@@ -12,7 +12,7 @@ export const useGetProfile = () => {
     });
 };
 
-export const useUpdateProfile = () => {
+export const useUpdateProfile = (userId) => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: async (profileData) => {
@@ -24,7 +24,7 @@ export const useUpdateProfile = () => {
             return data;
         },
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['userProfile'] });
+            queryClient.invalidateQueries({ queryKey: ['userProfile', userId] });
         }
     });
 };

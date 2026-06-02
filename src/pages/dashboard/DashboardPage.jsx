@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { Bell, Plus, ChevronRight, TrendingUp, TrendingDown, Zap } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuthContext } from '../../context/AuthContext'
+import { useGetProfile } from '../../hooks/useProfile'
 import { useDashboard } from '../../hooks/useDashboard'
 import { formatRupiah } from '../../utils/formatCurrency'
 import { formatDateShort } from '../../utils/formatDate'
@@ -37,7 +38,9 @@ export default function DashboardPage() {
   const { user } = useAuthContext()
   const { data, isLoading } = useDashboard()
   const { hasBudget, hasIncome } = useUserSetup()
-  const prefs = JSON.parse(localStorage.getItem('fingo_prefs_settings') || '{}')
+  
+  const { data: profile } = useGetProfile(user?.id)
+  const prefs = profile?.preferences || {}
   const hideBalance = prefs.sembunyiSaldo === true
   
   const greeting = () => {

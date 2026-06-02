@@ -9,7 +9,7 @@ export default function ProtectedRoute() {
   const { pathname } = useLocation()
 
   const { data: profile, isLoading: profileLoading } = useQuery({
-    queryKey: ['userProfile'],
+    queryKey: ['userProfile', user?.id],
     queryFn: async () => {
       const { data } = await api.get('/user/profile')
       return data
