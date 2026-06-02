@@ -23,6 +23,7 @@ app.use("/api/auth", toNodeHandler(auth));
 
 import transactionRoutes from "./routes/transactionRoutes.js";
 import goalRoutes from "./routes/goalRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 // Contoh endpoint API lain
 app.get("/api/health", (req, res) => {
@@ -32,6 +33,7 @@ app.get("/api/health", (req, res) => {
 // App Routes
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/goals", goalRoutes);
+app.use("/api/user", userRoutes);
 
 // Export for Vercel Serverless
 export default app;

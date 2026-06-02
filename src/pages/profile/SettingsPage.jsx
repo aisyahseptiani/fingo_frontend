@@ -7,6 +7,8 @@ import {
   Sliders, Wallet, Plus
 } from 'lucide-react'
 import { useAuthContext } from '../../context/AuthContext'
+import { useGetProfile, useUpdateProfile } from '../../hooks/useProfile'
+import { authClient } from '../../lib/auth-client'
 
 // ─── Toggle ─────────────────────────────────────────────────────
 function Toggle({ checked, onChange }) {
@@ -137,24 +139,36 @@ function MainSettings({ onNav }) {
 function AkunSettings({ onBack }) {
   const { user } = useAuthContext()
   const navigate = useNavigate()
-  const nameParts = (user?.name || '').split(' ')
   
-  const [form, setForm] = useState(() => {
-    const saved = localStorage.getItem('fingo_user_profile')
-    if (saved) return JSON.parse(saved)
-    return {
-      firstName: nameParts[0] || '',
-      lastName: nameParts.slice(1).join(' ') || '',
-      email: user?.email || '',
-      phone: '',
-      city: 'Pekanbaru',
-      province: 'Riau',
-      jobType: 'Gig Worker',
-      platform: 'Gojek',
-    }
+  const { data: profile, isLoading } = useGetProfile()
+  const { mutate: updateProfile, isPending } = useUpdateProfile()
+
+  const [form, setForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    city: 'Pekanbaru',
+    province: 'Riau',
+    jobType: 'Gig Worker',
+    platform: 'Gojek',
   })
 
-  const [localAvatar, setLocalAvatar] = useState(localStorage.getItem('fingo_user_avatar') || user?.image)
+  useEffect(() => {
+    if (profile) {
+      const nameParts = (profile.name || '').split(' ')
+      setForm({
+        firstName: nameParts[0] || '',
+        lastName: nameParts.slice(1).join(' ') || '',
+        email: profile.email || '',
+        phone: profile.phone || '',
+        city: profile.city || 'Pekanbaru',
+        province: profile.province || 'Riau',
+        jobType: profile.jobType || 'Gig Worker',
+        platform: profile.platform || 'Gojek',
+      })
+    }
+  }, [profile])
 
   const set = (key) => (e) =>
     setForm((p) => ({
@@ -164,16 +178,27 @@ function AkunSettings({ onBack }) {
 
   const handleSimpan = () => {
     if (!form.firstName || !form.email || !form.phone) return
-    localStorage.setItem('fingo_user_profile', JSON.stringify(form))
-    alert('Profil berhasil disimpan!')
-    navigate('/')
+    const fullName = [form.firstName, form.lastName].filter(Boolean).join(' ')
+    updateProfile({
+      name: fullName,
+      phone: form.phone,
+      city: form.city,
+      province: form.province,
+      jobType: form.jobType,
+      platform: form.platform
+    }, {
+      onSuccess: () => {
+        alert('Profil berhasil disimpan!')
+        navigate('/')
+      }
+    })
   }
 
   const handlePhotoUpload = () => {
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = 'image/*'
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
       const file = e.target.files[0]
       if (file) {
         if (!file.type.startsWith('image/')) {
@@ -181,9 +206,9 @@ function AkunSettings({ onBack }) {
           return;
         }
         const reader = new FileReader()
-        reader.onload = (ev) => {
-          setLocalAvatar(ev.target.result)
-          localStorage.setItem('fingo_user_avatar', ev.target.result)
+        reader.onload = async (ev) => {
+          const base64 = ev.target.result;
+          await authClient.updateUser({ image: base64 });
         }
         reader.readAsDataURL(file)
       }
@@ -191,9 +216,8 @@ function AkunSettings({ onBack }) {
     input.click()
   }
 
-  const handlePhotoRemove = () => {
-    setLocalAvatar(null)
-    localStorage.removeItem('fingo_user_avatar')
+  const handlePhotoRemove = async () => {
+    await authClient.updateUser({ image: '' });
   }
 
   return (
@@ -222,9 +246,9 @@ function AkunSettings({ onBack }) {
 
           {/* FOTO */}
           <div className="shrink-0">
-            {localAvatar ? (
+            {user?.image ? (
               <img
-                src={localAvatar}
+                src={user.image}
                 alt={user?.name || form.firstName}
                 className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover"
               />
@@ -510,7 +534,7 @@ function AkunSettings({ onBack }) {
         <div className="pt-2">
           <button
             onClick={handleSimpan}
-            disabled={!form.firstName || !form.email || !form.phone}
+            disabled={!form.firstName || !form.email || !form.phone || isPending}
             className="
               w-full
               sm:w-auto
@@ -531,7 +555,7 @@ function AkunSettings({ onBack }) {
               duration-200
             "
           >
-            Simpan Perubahan
+            {isPending ? 'Menyimpan...' : 'Simpan Perubahan'}
           </button>
         </div>
       </div>
@@ -793,6 +817,28 @@ function PasswordPage({ onBack }) {
     newPw: '',
     confirm: '',
   })
+  
+  const [loading, setLoading] = useState(false);
+
+  const handleUpdate = async () => {
+    if (form.newPw !== form.confirm) {
+       alert("Konfirmasi kata sandi tidak cocok!");
+       return;
+    }
+    setLoading(true);
+    const { data, error } = await authClient.changePassword({
+       newPassword: form.newPw,
+       currentPassword: form.current,
+       revokeOtherSessions: true
+    });
+    setLoading(false);
+    if (error) {
+       alert("Gagal memperbarui sandi: " + error.message);
+    } else {
+       alert('Sandi berhasil diperbarui');
+       onBack();
+    }
+  }
 
   return (
     <div className="p-6">
@@ -871,8 +917,8 @@ function PasswordPage({ onBack }) {
 
         {/* Tombol */}
         <div className="flex justify-end pt-1">
-          <button onClick={() => { alert('Sandi berhasil diperbarui'); onBack(); }} className="px-7 py-3 bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-bold rounded-2xl transition-colors">
-            Perbarui
+          <button onClick={handleUpdate} disabled={loading} className="px-7 py-3 bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-bold rounded-2xl transition-colors disabled:bg-gray-300">
+            {loading ? 'Memperbarui...' : 'Perbarui'}
           </button>
         </div>
       </div>
