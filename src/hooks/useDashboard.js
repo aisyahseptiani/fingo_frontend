@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import api from '../services/api'
+import { predictIncomeAi } from '../services/fingoAi'
 
 export function useDashboard() {
   return useQuery({
@@ -58,6 +59,7 @@ export function useDashboard() {
       let defaultBudget = 5000000;
       let aiSuggestion = null;
       let hasBudgetPlanner = false;
+      let budgetByCategory = [];
       
       try {
         const savedBudgetStr = localStorage.getItem('fingo_budget_values');
@@ -67,6 +69,14 @@ export function useDashboard() {
           if (totalSavedBudget > 0) {
             defaultBudget = totalSavedBudget;
             hasBudgetPlanner = true;
+            budgetByCategory = Object.keys(savedBudgetObj)
+              .filter(cat => savedBudgetObj[cat] > 0)
+              .map(cat => ({
+                category: cat,
+                amount: savedBudgetObj[cat],
+                percent: Math.round((savedBudgetObj[cat] / totalSavedBudget) * 100)
+              }))
+              .sort((a, b) => b.amount - a.amount);
           }
           
           let maxOverspendPct = 0;
@@ -128,14 +138,27 @@ export function useDashboard() {
           if (Array.isArray(predictorData) && predictorData.length > 0) {
             hasIncomePredictor = true;
             predictorHistoryData = predictorData;
-            const n = predictorData.length;
-            if (n >= 2) {
-               const values = predictorData.map(w => w.amount);
-               const trend  = (values[n - 1] - values[0]) / (n - 1);
-               const last   = values[n - 1];
-               incomePrediction = Math.round(last + trend * 1 * 0.5);
-            } else {
-               incomePrediction = predictorData[n - 1].amount;
+            
+            const values = predictorData.map(w => w.amount);
+            const last12 = values.slice(-12);
+            while(last12.length < 12) {
+               last12.unshift(last12[0] || 0);
+            }
+            try {
+              const aiData = await predictIncomeAi(last12);
+              if (aiData && aiData.prediction_4_weeks_ahead) {
+                 incomePrediction = aiData.prediction_4_weeks_ahead[0];
+              }
+            } catch(e) {
+               console.error('Error fetching AI prediction in dashboard', e);
+               // Fallback
+               const n = predictorData.length;
+               if (n >= 2) {
+                 const trend  = (values[n - 1] - values[0]) / (n - 1);
+                 incomePrediction = Math.round(values[n - 1] + trend * 1 * 0.5);
+               } else {
+                 incomePrediction = predictorData[n - 1].amount;
+               }
             }
           }
         }
@@ -161,6 +184,7 @@ export function useDashboard() {
           date: t.date
         })),
         expenseByCategory,
+        budgetByCategory,
         incomePrediction,
         hasIncomePredictor,
         predictorHistoryData,

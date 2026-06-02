@@ -176,6 +176,10 @@ function AkunSettings({ onBack }) {
     input.onchange = (e) => {
       const file = e.target.files[0]
       if (file) {
+        if (!file.type.startsWith('image/')) {
+          alert('Hanya file gambar (JPG, PNG, WebP) yang diperbolehkan.');
+          return;
+        }
         const reader = new FileReader()
         reader.onload = (ev) => {
           setLocalAvatar(ev.target.result)
@@ -255,6 +259,7 @@ function AkunSettings({ onBack }) {
             <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
 
               <button
+                onClick={handlePhotoUpload}
                 className="
                   h-8 sm:h-9
 
@@ -278,6 +283,7 @@ function AkunSettings({ onBack }) {
               </button>
 
               <button
+                onClick={handlePhotoRemove}
                 className="
                   h-8 sm:h-9
 
@@ -536,22 +542,31 @@ function AkunSettings({ onBack }) {
 // NOTIFIKASI
 // ════════════════════════════════════════════════════════════════
 function NotifikasiSettings({ onBack }) {
-  const [notifs, setNotifs] = useState({
-    all: true,
-    impulsif: true,
-    budget: true,
-    impulsif2: true,
-    target: true,
-    ai: true,
-    keamanan: true,
-    promo: true,
+  const [notifs, setNotifs] = useState(() => {
+    const saved = localStorage.getItem('fingo_notif_settings')
+    if (saved) return JSON.parse(saved)
+    return {
+      all: true,
+      impulsif: true,
+      budget: true,
+      impulsif2: true,
+      target: true,
+      ai: true,
+      keamanan: true,
+      promo: true,
+    }
   })
 
   const toggle = (key) =>
-    setNotifs((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }))
+    setNotifs((prev) => {
+      const next = { ...prev, [key]: !prev[key] }
+      if (key === 'all') {
+         const val = next.all;
+         Object.keys(next).forEach(k => next[k] = val);
+      }
+      localStorage.setItem('fingo_notif_settings', JSON.stringify(next))
+      return next
+    })
 
   const ITEMS = [
     {
@@ -856,7 +871,7 @@ function PasswordPage({ onBack }) {
 
         {/* Tombol */}
         <div className="flex justify-end pt-1">
-          <button className="px-7 py-3 bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-bold rounded-2xl transition-colors">
+          <button onClick={() => { alert('Sandi berhasil diperbarui'); onBack(); }} className="px-7 py-3 bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-bold rounded-2xl transition-colors">
             Perbarui
           </button>
         </div>
@@ -991,7 +1006,7 @@ function TwoFAPage({ onBack }) {
 
         {/* Button */}
         <div className="pt-1">
-          <button className="w-full py-3 bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-bold rounded-2xl transition-colors">
+          <button onClick={() => { alert('Pengaturan 2FA berhasil disimpan'); onBack(); }} className="w-full py-3 bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-bold rounded-2xl transition-colors">
             Simpan Pengaturan 2FA
           </button>
         </div>
@@ -1773,7 +1788,12 @@ function IntegrasiSettings({ onBack }) {
           ))}
         </div>
         <div className="flex justify-end">
-          <button className="flex items-center gap-2 px-5 py-2.5 bg-[#22c55e] hover:bg-[#16a34a] text-white font-semibold text-sm rounded-xl transition-colors">
+          <button onClick={() => {
+            const name = window.prompt('Masukkan nama layanan (misal: ShopeePay):');
+            if (name) {
+               setWallets(p => [...p, { id: Date.now(), name, connected: true }])
+            }
+          }} className="flex items-center gap-2 px-5 py-2.5 bg-[#22c55e] hover:bg-[#16a34a] text-white font-semibold text-sm rounded-xl transition-colors">
             <Plus size={15} /> Tambah
           </button>
         </div>

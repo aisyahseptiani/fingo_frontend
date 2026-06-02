@@ -37,6 +37,8 @@ export default function DashboardPage() {
   const { user } = useAuthContext()
   const { data, isLoading } = useDashboard()
   const { hasBudget, hasIncome } = useUserSetup()
+  const prefs = JSON.parse(localStorage.getItem('fingo_prefs_settings') || '{}')
+  const hideBalance = prefs.sembunyiSaldo === true
   
   const greeting = () => {
     const h = new Date().getHours()
@@ -66,7 +68,7 @@ export default function DashboardPage() {
         {/* 4 Stat Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           <StatCard title="Saldo Tersedia"
-            value={isLoading ? '...' : formatRupiah(data?.balance)}
+            value={isLoading ? '...' : (hideBalance ? 'Rp •••••••' : formatRupiah(data?.balance))}
             subtitle={data?.monthLabel || "Bulan ini"} subtitleColor="text-[#22c55e]" borderColor="border-l-[#22c55e]" />
           <StatCard title="Pemasukan Bulan ini"
             value={isLoading ? '...' : formatRupiah(data?.income)}
@@ -84,7 +86,7 @@ export default function DashboardPage() {
           <TransactionTable transactions={data?.recentTransactions ?? []} isLoading={isLoading} />
           <div className="space-y-4">
             {hasBudget
-              ? <BudgetDonutChart data={data?.expenseByCategory ?? []} total={data?.totalBudget ?? data?.expense ?? 0} />
+              ? <BudgetDonutChart data={data?.budgetByCategory ?? []} total={data?.totalBudget ?? 0} />
               : <BudgetSetupCard />
             }
             {hasIncome ? (
@@ -171,26 +173,26 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white rounded-xl border border-gray-100 border-l-4 border-l-[#22c55e] p-3.5 shadow-sm">
             <p className="text-xs text-gray-400 mb-1">Saldo Tersedia</p>
-            <p className="text-base font-black text-gray-900 leading-tight">{isLoading ? '...' : formatRupiah(data?.balance)}</p>
-            <p className="text-[10px] text-[#22c55e] font-semibold mt-1">Bulan April 2026</p>
+            <p className="text-base font-black text-gray-900 leading-tight">{isLoading ? '...' : (hideBalance ? 'Rp •••••••' : formatRupiah(data?.balance))}</p>
+            <p className="text-[10px] text-[#22c55e] font-semibold mt-1">{data?.monthLabel || "Bulan ini"}</p>
           </div>
           <div className="bg-white rounded-xl border border-gray-100 border-l-4 border-l-blue-500 p-3.5 shadow-sm">
             <p className="text-xs text-gray-400 mb-1">Pemasukan</p>
             <p className="text-base font-black text-gray-900 leading-tight">{isLoading ? '...' : formatRupiah(data?.income)}</p>
-            <p className="text-[10px] text-blue-500 font-semibold mt-1">+12% bulan lalu</p>
+            <p className="text-[10px] text-blue-500 font-semibold mt-1">{data?.incomeDiffLabel || ""}</p>
           </div>
           <div className="bg-white rounded-xl border border-gray-100 border-l-4 border-l-red-500 p-3.5 shadow-sm">
             <p className="text-xs text-gray-400 mb-1">Pengeluaran</p>
             <p className="text-base font-black text-gray-900 leading-tight">{isLoading ? '...' : formatRupiah(data?.expense)}</p>
-            <p className="text-[10px] text-red-500 font-semibold mt-1">68% budget terpakai</p>
+            <p className="text-[10px] text-red-500 font-semibold mt-1">{data?.budgetUsedLabel || ""}</p>
           </div>
           <div className="bg-white rounded-xl border border-gray-100 border-l-4 border-l-amber-500 p-3.5 shadow-sm">
             <div className="flex items-center gap-1 mb-1">
               <Zap size={11} className="text-amber-500" />
               <p className="text-xs text-gray-400">Implusif</p>
             </div>
-            <p className="text-base font-black text-gray-900 leading-tight">{data?.impulsiveCount ?? 3}x</p>
-            <p className="text-[10px] text-amber-500 font-semibold mt-1">↑ 1 dari bulan lalu</p>
+            <p className="text-base font-black text-gray-900 leading-tight">{data?.impulsiveCount ?? 0}x</p>
+            <p className="text-[10px] text-amber-500 font-semibold mt-1">{data?.impulsiveDiffLabel || ""}</p>
           </div>
         </div>
 
@@ -224,7 +226,7 @@ export default function DashboardPage() {
 
         {/* Donut chart */}
         {hasBudget
-          ? <BudgetDonutChart data={data?.expenseByCategory ?? []} total={data?.totalBudget ?? data?.expense ?? 0} />
+          ? <BudgetDonutChart data={data?.budgetByCategory ?? []} total={data?.totalBudget ?? 0} />
           : <BudgetSetupCard />
         }
 

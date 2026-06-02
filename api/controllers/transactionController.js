@@ -62,14 +62,14 @@ export const getSummary = async (req, res) => {
 export const updateTransaction = async (req, res) => {
     try {
         const { id } = req.params;
-        const { amount, type, category, description, date } = req.body;
+        const { amount, type, category, note, date } = req.body;
         const transaction = await prisma.transaction.update({
             where: { id, userId: req.user.id },
             data: {
                 amount: parseFloat(amount),
                 type,
                 category,
-                note: description,
+                note,
                 date: date ? new Date(date) : undefined
             }
         });

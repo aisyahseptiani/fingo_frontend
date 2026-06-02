@@ -70,7 +70,7 @@ function OnboardingForm({ onComplete }) {
     const saved = localStorage.getItem('fingo_income_predictor_draft')
     if (saved) return JSON.parse(saved);
     const initialWeeks = [];
-    for (let i = 12; i >= 1; i--) {
+    for (let i = 4; i >= 1; i--) {
       initialWeeks.push({ amount: '', source: '', label: i === 1 ? 'Minggu lalu' : `${i} Minggu lalu` });
     }
     return initialWeeks;
@@ -106,7 +106,7 @@ function OnboardingForm({ onComplete }) {
             Income Predictor
           </h1>
           <p className="text-gray-400 text-sm mt-0.5">
-            Masukkan data <strong className="text-gray-500">12 minggu terakhir</strong> untuk hasil AI yang akurat
+            Masukkan data <strong className="text-gray-500">4 minggu terakhir</strong> untuk hasil AI yang akurat
           </p>
         </div>
       </div>
@@ -426,7 +426,7 @@ function PredictorDashboard({ historyData, onAddWeek, onReset }) {
                     <span className="text-[10px] font-bold text-gray-600">Analisis Tren Fingo AI</span>
                   </div>
                   <p className="text-[10px] text-gray-500 leading-relaxed">
-                    Berdasarkan pola 12 minggu terakhir, prediksi tren pendapatan Anda menunjukkan arah <strong className="text-gray-700">{direction === 'Up' ? 'Naik' : direction === 'Down' ? 'Turun' : 'Stabil'}</strong>.
+                    Berdasarkan pola historis, prediksi tren pendapatan Anda menunjukkan arah <strong className="text-gray-700">{direction === 'Up' ? 'Naik' : direction === 'Down' ? 'Turun' : 'Stabil'}</strong>.
                   </p>
                 </div>
               </>

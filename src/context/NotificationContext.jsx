@@ -18,6 +18,24 @@ export function NotificationProvider({ children }) {
 
   // Tambah notifikasi baru (duplikat berdasarkan `id` diabaikan)
   const addNotification = useCallback((notif) => {
+    try {
+      const saved = localStorage.getItem('fingo_notif_settings')
+      if (saved) {
+        const settings = JSON.parse(saved);
+        if (!settings.all) return;
+        const typeMap = {
+          'ai_profile': 'ai',
+          'ai_dashboard': 'ai',
+          'ai_impulse': 'impulsif',
+          'budget_warning': 'budget'
+        }
+        const mappedKey = typeMap[notif.type]
+        if (mappedKey && settings[mappedKey] === false) {
+           return;
+        }
+      }
+    } catch(e) { console.error(e) }
+
     setNotifications((prev) => {
       if (notif.id && prev.some((n) => n.id === notif.id)) return prev
       return [
