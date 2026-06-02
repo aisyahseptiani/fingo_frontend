@@ -30,10 +30,10 @@ export default function ProtectedRoute() {
 
   if (!user) return <Navigate to="/login" replace />
 
-  // Check if profile is completed (phone is required)
-  const isProfileComplete = profile?.phone ? true : false
+  // Check if profile is completed (phone and jobType are required)
+  const isProfileComplete = profile?.phone && profile?.jobType ? true : false
   if (!isProfileComplete && pathname !== '/settings') {
-    return <Navigate to="/settings" replace />
+    return <Navigate to="/settings?tab=akun" replace />
   }
 
   return <Outlet />

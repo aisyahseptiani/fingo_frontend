@@ -149,10 +149,10 @@ function AkunSettings({ onBack }) {
     lastName: '',
     email: '',
     phone: '',
-    city: 'Pekanbaru',
-    province: 'Riau',
-    jobType: 'Gig Worker',
-    platform: 'Gojek',
+    city: '',
+    province: '',
+    jobType: '',
+    platform: '',
   })
 
   useEffect(() => {
@@ -163,10 +163,10 @@ function AkunSettings({ onBack }) {
         lastName: nameParts.slice(1).join(' ') || '',
         email: profile.email || '',
         phone: profile.phone || '',
-        city: profile.city || 'Pekanbaru',
-        province: profile.province || 'Riau',
-        jobType: profile.jobType || 'Gig Worker',
-        platform: profile.platform || 'Gojek',
+        city: profile.city || '',
+        province: profile.province || '',
+        jobType: profile.jobType || '',
+        platform: profile.platform || '',
       })
     }
   }, [profile])
@@ -177,8 +177,10 @@ function AkunSettings({ onBack }) {
       [key]: e.target.value,
     }))
 
+  const isFormValid = form.firstName && form.email && form.phone && form.jobType;
+
   const handleSimpan = () => {
-    if (!form.firstName || !form.email || !form.phone) return
+    if (!isFormValid) return
     const fullName = [form.firstName, form.lastName].filter(Boolean).join(' ')
     updateProfile({
       name: fullName,
@@ -190,7 +192,7 @@ function AkunSettings({ onBack }) {
     }, {
       onSuccess: () => {
         alert('Profil berhasil disimpan!')
-        navigate('/')
+        window.location.reload()
       }
     })
   }
@@ -225,11 +227,20 @@ function AkunSettings({ onBack }) {
 
   return (
     <div className="p-4 sm:p-5 lg:p-6">
-      <BackHeader
-        onBack={onBack}
-        title="Akun"
-        subtitle="Profil & Informasi"
-      />
+      {!profile ? null : (
+        (!profile.phone || !profile.jobType) ? (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl">
+            <h2 className="font-bold text-red-700 text-sm mb-1">Profil Belum Lengkap!</h2>
+            <p className="text-xs text-red-600">Mohon lengkapi Nomor Telepon dan Tipe Pekerjaan untuk menggunakan Fingo.</p>
+          </div>
+        ) : (
+          <BackHeader
+            onBack={onBack}
+            title="Akun"
+            subtitle="Profil & Informasi"
+          />
+        )
+      )}
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:p-5 lg:p-6 space-y-6">
 
@@ -495,7 +506,7 @@ function AkunSettings({ onBack }) {
 
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
-              Tipe Pekerjaan <span className="text-gray-400 normal-case ml-1 font-medium">(Opsional)</span>
+              Tipe Pekerjaan <span className="text-red-500 normal-case ml-1 font-medium">(Wajib)</span>
             </label>
 
             <select
@@ -514,13 +525,16 @@ function AkunSettings({ onBack }) {
                 bg-white
               "
             >
+              <option value="" disabled>Pilih tipe</option>
               {[
                 'Gig Worker',
                 'Freelancer',
                 'Karyawan',
                 'Wirausaha',
+                'Pelajar/Mahasiswa',
+                'Lainnya',
               ].map((j) => (
-                <option key={j}>{j}</option>
+                <option key={j} value={j}>{j}</option>
               ))}
             </select>
           </div>
@@ -537,7 +551,7 @@ function AkunSettings({ onBack }) {
         <div className="pt-2">
           <button
             onClick={handleSimpan}
-            disabled={!form.firstName || !form.email || !form.phone || isPending}
+            disabled={isPending || !isFormValid}
             className="
               w-full
               sm:w-auto
@@ -1873,14 +1887,21 @@ function IntegrasiSettings({ onBack }) {
 export default function SettingsPage() {
   const location = useLocation()
   const [page, setPage] = useState('main')
+  const { user } = useAuthContext()
+  const { data: profile } = useGetProfile(user?.id)
+  const isProfileComplete = profile?.phone && profile?.jobType;
 
   useEffect(() => {
+    if (profile && !isProfileComplete) {
+      setPage('akun')
+      return;
+    }
     const params = new URLSearchParams(location.search)
     const tab = params.get('tab')
     if (tab && ['akun', 'notifikasi', 'keamanan', 'preferensi', 'integrasi'].includes(tab)) {
       setPage(tab)
     }
-  }, [location.search])
+  }, [location.search, profile, isProfileComplete])
 
   const pages = {
     main:        <MainSettings onNav={setPage} />,
