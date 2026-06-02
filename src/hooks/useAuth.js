@@ -37,7 +37,7 @@ export function useRegister() {
     setIsPending(true)
     setIsError(false)
     try {
-      const { error: err } = await signUp.email({ email, password, name })
+      const { error: err } = await signUp.email({ email, password, name, jobType })
       if (err) throw err
       
       // better-auth secara default langsung me-login-kan user setelah signUp.

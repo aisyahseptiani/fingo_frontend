@@ -154,6 +154,7 @@ function AkunSettings({ onBack }) {
     jobType: '',
     platform: '',
   })
+  const [pendingPhoto, setPendingPhoto] = useState(null)
 
   useEffect(() => {
     if (profile) {
@@ -190,7 +191,10 @@ function AkunSettings({ onBack }) {
       jobType: form.jobType,
       platform: form.platform
     }, {
-      onSuccess: () => {
+      onSuccess: async () => {
+        if (pendingPhoto !== null) {
+          await authClient.updateUser({ image: pendingPhoto });
+        }
         alert('Profil berhasil disimpan!')
         window.location.reload()
       }
@@ -211,8 +215,7 @@ function AkunSettings({ onBack }) {
         const reader = new FileReader()
         reader.onload = async (ev) => {
           const base64 = ev.target.result;
-          await authClient.updateUser({ image: base64 });
-          window.location.reload();
+          setPendingPhoto(base64);
         }
         reader.readAsDataURL(file)
       }
@@ -221,8 +224,7 @@ function AkunSettings({ onBack }) {
   }
 
   const handlePhotoRemove = async () => {
-    await authClient.updateUser({ image: '' });
-    window.location.reload();
+    setPendingPhoto('');
   }
 
   return (
@@ -260,9 +262,9 @@ function AkunSettings({ onBack }) {
 
           {/* FOTO */}
           <div className="shrink-0">
-            {user?.image ? (
+            { (pendingPhoto !== null ? pendingPhoto : user?.image) ? (
               <img
-                src={user.image}
+                src={pendingPhoto !== null ? pendingPhoto : user.image}
                 alt={user?.name || form.firstName}
                 className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover"
               />
@@ -455,6 +457,7 @@ function AkunSettings({ onBack }) {
                 bg-white
               "
             >
+              <option value="">Pilih Kota (Opsional)</option>
               {[
                 'Pekanbaru',
                 'Jakarta',
@@ -488,6 +491,7 @@ function AkunSettings({ onBack }) {
                 bg-white
               "
             >
+              <option value="">Pilih Provinsi (Opsional)</option>
               {[
                 'Riau',
                 'DKI Jakarta',

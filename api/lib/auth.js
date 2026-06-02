@@ -30,6 +30,14 @@ export const auth = betterAuth({
         enabled: true,
         autoSignIn: true,
     },
+    user: {
+        additionalFields: {
+            jobType: {
+                type: "string",
+                required: false,
+            }
+        }
+    },
     account: {
         accountLinking: {
             enabled: true,

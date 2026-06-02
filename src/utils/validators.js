@@ -14,10 +14,11 @@ export const validateLoginForm = ({ email, password }) => {
   return errors
 }
 
-export const validateRegisterForm = ({ name, email, password }) => {
+export const validateRegisterForm = ({ name, email, password, jobType }) => {
   const errors = {}
   if (!name || name.length < 2) errors.name = 'Nama minimal 2 karakter'
   if (!isValidEmail(email)) errors.email = 'Email tidak valid'
   if (!isValidPassword(password)) errors.password = 'Password minimal 8 karakter'
+  if (!jobType) errors.jobType = 'Tipe pekerjaan wajib dipilih'
   return errors
 }
