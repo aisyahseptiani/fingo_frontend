@@ -4,6 +4,9 @@ import {
   TrendingUp, TrendingDown, Wallet, X, Check, AlertTriangle,
 } from 'lucide-react'
 import { useGetTransactions, useUpdateTransaction, useDeleteTransaction } from '../../hooks/useTransactions'
+import { useAuthContext } from '../../context/AuthContext'
+import { useGetProfile } from '../../hooks/useProfile'
+import { formatRupiah } from '../../utils/formatCurrency'
 
 const FILTERS = ['Semua', 'Pemasukan', 'Pengeluaran', 'Makanan', 'Transport', 'Hiburan', 'Tagihan', 'Kesehatan', 'Pendidikan', 'Lainnya', 'Implusif']
 
@@ -26,14 +29,12 @@ const CATEGORY_COLORS = {
   'Lainnya':    'bg-gray-100 text-gray-600',
 }
 
-const formatRp = (n) => new Intl.NumberFormat('id-ID', {
-  style: 'currency', currency: 'IDR', minimumFractionDigits: 0,
-}).format(n)
+
 
 const PER_PAGE = 7
 
 // ── Edit Modal ────────────────────────────────────────────────────────────────
-function EditModal({ trx, onSave, onClose }) {
+function EditModal({ trx, onSave, onClose, prefs }) {
   const [form, setForm] = useState({
     description:   trx.description,
     amount:        trx.amount,
@@ -90,9 +91,11 @@ function EditModal({ trx, onSave, onClose }) {
 
           {/* Jumlah */}
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Jumlah (Rp)</label>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Jumlah ({prefs?.matauang || 'IDR'})</label>
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-semibold">Rp</span>
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-semibold">
+                {prefs?.matauang === 'USD' ? '$' : prefs?.matauang === 'SGD' ? 'S$' : prefs?.matauang === 'MYR' ? 'RM' : 'Rp'}
+              </span>
               <input type="number" value={form.amount}
                 onChange={e => setForm(p => ({ ...p, amount: Number(e.target.value) }))}
                 className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#22c55e] focus:ring-2 focus:ring-[#22c55e]/10" />
@@ -150,7 +153,7 @@ function EditModal({ trx, onSave, onClose }) {
 }
 
 // ── Delete Confirm Modal ──────────────────────────────────────────────────────
-function DeleteModal({ trx, onConfirm, onClose }) {
+function DeleteModal({ trx, onConfirm, onClose, prefs }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
       <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6">
@@ -167,7 +170,7 @@ function DeleteModal({ trx, onConfirm, onClose }) {
         <div className="bg-gray-50 rounded-xl p-3 mb-5">
           <p className="text-sm font-semibold text-gray-800">{trx.description}</p>
           <p className={`text-sm font-bold mt-0.5 ${trx.type === 'income' ? 'text-[#22c55e]' : 'text-red-500'}`}>
-            {trx.type === 'income' ? '+' : '-'}{formatRp(trx.amount)}
+            {trx.type === 'income' ? '+' : '-'}{formatRupiah(trx.amount, prefs)}
           </p>
           <p className="text-xs text-gray-400 mt-0.5">{trx.date} · {trx.method}</p>
         </div>
@@ -189,6 +192,12 @@ function DeleteModal({ trx, onConfirm, onClose }) {
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function TransactionHistoryPage() {
+  const { user } = useAuthContext()
+  const { data: profile } = useGetProfile(user?.id)
+  const prefs = profile?.preferences || {}
+
+  const formatRp = (n) => formatRupiah(n, prefs)
+
   const { data: rawTransactions = [] } = useGetTransactions()
   const { mutate: updateTrx } = useUpdateTransaction()
   const { mutate: deleteTrxMutation } = useDeleteTransaction()
@@ -509,6 +518,7 @@ export default function TransactionHistoryPage() {
       {editTrx && (
         <EditModal
           trx={editTrx}
+          prefs={prefs}
           onSave={(updated) => updateTrx({
             id: editTrx.id,
             amount: updated.amount,
@@ -522,6 +532,7 @@ export default function TransactionHistoryPage() {
       {deleteTrx && (
         <DeleteModal
           trx={deleteTrx}
+          prefs={prefs}
           onConfirm={() => deleteTrxMutation(deleteTrx.id)}
           onClose={() => setDeleteTrx(null)}
         />
