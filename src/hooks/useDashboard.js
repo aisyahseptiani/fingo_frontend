@@ -157,11 +157,10 @@ export function useDashboard() {
                  const trend  = (values[n - 1] - values[0]) / (n - 1);
                  incomePrediction = Math.round(values[n - 1] + trend * 1 * 0.5);
                } else {
-                 incomePrediction = predictorData[n - 1].amount;
+                  incomePrediction = predictorData[n - 1].amount;
                }
             }
           }
-        }
       } catch (e) {
          console.error('Error parsing predictor data', e);
       }
