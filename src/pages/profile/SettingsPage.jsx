@@ -1771,7 +1771,7 @@ function IntegrasiSettings({ onBack }) {
           ))}
         </div>
         <div className="flex justify-end">
-          <button disabled className="flex items-center gap-2 px-5 py-2.5 bg-gray-200 text-gray-400 font-semibold text-sm rounded-xl cursor-not-allowed">
+          <button onClick={handleAdd} disabled={isPending} className="flex items-center gap-2 px-5 py-2.5 bg-[#22c55e] hover:bg-[#16a34a] text-white font-semibold text-sm rounded-xl transition-colors disabled:opacity-50">
             <Plus size={15} /> Tambah
           </button>
         </div>

@@ -86,7 +86,7 @@ export default function DashboardPage() {
               </button>
             </div>
           }
-            value={isLoading ? '...' : (hideBalance ? 'Rp •••••••' : formatRupiah(data?.balance, prefs))}
+            value={isLoading ? '...' : (hideBalance ? `${prefs?.matauang === 'USD' ? '$' : prefs?.matauang === 'SGD' ? 'S$' : prefs?.matauang === 'MYR' ? 'RM ' : 'Rp '}•••••••` : formatRupiah(data?.balance, prefs))}
             subtitle={data?.monthLabel || "Bulan ini"} subtitleColor="text-[#22c55e]" borderColor="border-l-[#22c55e]" />
           <StatCard title="Pemasukan Bulan ini"
             value={isLoading ? '...' : formatRupiah(data?.income, prefs)}
@@ -210,7 +210,7 @@ export default function DashboardPage() {
                 {hideBalance ? <EyeOff size={14} /> : <Eye size={14} />}
               </button>
             </div>
-            <p className="text-base font-black text-gray-900 leading-tight">{isLoading ? '...' : (hideBalance ? 'Rp •••••••' : formatRupiah(data?.balance, prefs))}</p>
+            <p className="text-base font-black text-gray-900 leading-tight">{isLoading ? '...' : (hideBalance ? `${prefs?.matauang === 'USD' ? '$' : prefs?.matauang === 'SGD' ? 'S$' : prefs?.matauang === 'MYR' ? 'RM ' : 'Rp '}•••••••` : formatRupiah(data?.balance, prefs))}</p>
             <p className="text-[10px] text-[#22c55e] font-semibold mt-1">{data?.monthLabel || "Bulan ini"}</p>
           </div>
           <div className="bg-white rounded-xl border border-gray-100 border-l-4 border-l-blue-500 p-3.5 shadow-sm">
