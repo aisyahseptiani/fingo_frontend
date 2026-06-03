@@ -1543,7 +1543,7 @@ function PreferensiSettings({ onBack }) {
 
   const [prefs, setPrefs] = useState(() => {
     return profile?.preferences || {
-      grafik: 'Gelap',
+      grafik: 'Garis (Line)',
       perPage: '20',
       formatPendek: true,
       sembunyiSaldo: true,

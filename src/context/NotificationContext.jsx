@@ -1,54 +1,59 @@
 // context/NotificationContext.jsx
-import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react'
+import api from '../services/api'
+import { useAuthContext } from './AuthContext'
+import { useGetProfile } from '../hooks/useProfile'
 
 const NotificationContext = createContext(null)
-
-/**
- * Tipe notifikasi yang didukung:
- *  - 'ai_profile'    → Saran AI dari halaman Profil
- *  - 'ai_dashboard'  → Saran AI dari Dashboard
- *  - 'ai_impulse'    → Hasil analisis Impulsive Detector
- *  - 'budget_warning'→ Peringatan budget mendekati / melebihi limit
- */
 
 const DEFAULT_NOTIFICATIONS = []
 
 export function NotificationProvider({ children }) {
-  const [notifications, setNotifications] = useState(() => {
-    try {
-      const saved = localStorage.getItem('fingo_notifications_list')
-      if (saved) return JSON.parse(saved)
-    } catch(e) {}
-    return DEFAULT_NOTIFICATIONS
-  })
+  const { user } = useAuthContext();
+  const { data: profile } = useGetProfile(user?.id);
+  const [notifications, setNotifications] = useState(DEFAULT_NOTIFICATIONS);
 
+  // 1. Sinkronisasi Awal dari Database
   useEffect(() => {
-    localStorage.setItem('fingo_notifications_list', JSON.stringify(notifications))
-  }, [notifications])
+    if (profile?.preferences?.notificationHistory) {
+      setNotifications(profile.preferences.notificationHistory);
+    }
+  }, [profile?.preferences?.notificationHistory]);
 
-  // Tambah notifikasi baru (duplikat berdasarkan `id` diabaikan)
+  // 2. Fungsi Background Sinkronisasi ke DB
+  const syncToDb = useCallback((newList) => {
+    if (!user) return;
+    // Mengambil profile terbaru agar tidak menimpa settingan lain yang mungkin berubah
+    api.get('/user/profile').then(({ data: currentProfile }) => {
+      const prefs = currentProfile.preferences || {};
+      api.put('/user/profile', {
+        preferences: {
+          ...prefs,
+          notificationHistory: newList
+        }
+      }).catch(console.error);
+    }).catch(console.error);
+  }, [user]);
+
+  const profileSettings = profile?.notifications || {};
+
+  // Tambah notifikasi baru
   const addNotification = useCallback((notif) => {
-    try {
-      const saved = localStorage.getItem('fingo_notif_settings')
-      if (saved) {
-        const settings = JSON.parse(saved);
-        if (!settings.all) return;
-        const typeMap = {
-          'ai_profile': 'ai',
-          'ai_dashboard': 'ai',
-          'ai_impulse': 'impulsif',
-          'budget_warning': 'budget'
-        }
-        const mappedKey = typeMap[notif.type]
-        if (mappedKey && settings[mappedKey] === false) {
-           return;
-        }
-      }
-    } catch(e) { console.error(e) }
+    // Cek preferensi user dari database
+    if (profileSettings.all === false) return;
+    const typeMap = {
+      'ai_profile': 'ai',
+      'ai_dashboard': 'ai',
+      'ai_impulse': 'impulsif',
+      'budget_warning': 'budget'
+    };
+    const mappedKey = typeMap[notif.type];
+    if (mappedKey && profileSettings[mappedKey] === false) return;
 
     setNotifications((prev) => {
-      if (notif.id && prev.some((n) => n.id === notif.id)) return prev
-      return [
+      if (notif.id && prev.some((n) => n.id === notif.id)) return prev;
+      
+      const newList = [
         {
           id: notif.id ?? `notif_${Date.now()}_${Math.random()}`,
           type: notif.type ?? 'info',
@@ -59,47 +64,62 @@ export function NotificationProvider({ children }) {
           read: false,
         },
         ...prev,
-      ]
-    })
-  }, [])
+      ];
+      syncToDb(newList);
+      return newList;
+    });
+  }, [syncToDb, profileSettings]);
 
   // Tandai satu notifikasi sebagai sudah dibaca
   const markAsRead = useCallback((id) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    )
-  }, [])
+    setNotifications((prev) => {
+      const next = prev.map((n) => (n.id === id ? { ...n, read: true } : n));
+      syncToDb(next);
+      return next;
+    });
+  }, [syncToDb]);
 
   // Tandai semua sebagai sudah dibaca
   const markAllAsRead = useCallback(() => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
-  }, [])
+    setNotifications((prev) => {
+      const next = prev.map((n) => ({ ...n, read: true }));
+      syncToDb(next);
+      return next;
+    });
+  }, [syncToDb]);
 
   // Hapus satu notifikasi
   const removeNotification = useCallback((id) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id))
-  }, [])
+    setNotifications((prev) => {
+      const next = prev.filter((n) => n.id !== id);
+      syncToDb(next);
+      return next;
+    });
+  }, [syncToDb]);
 
   // Hapus semua notifikasi
-  const clearAll = useCallback(() => setNotifications([]), [])
+  const clearAll = useCallback(() => {
+    setNotifications([]);
+    syncToDb([]);
+  }, [syncToDb]);
 
   const unreadCount = notifications.filter((n) => !n.read).length
 
+  const contextValue = useMemo(() => ({
+    notifications,
+    unreadCount,
+    addNotification,
+    markAsRead,
+    markAllAsRead,
+    removeNotification,
+    clearAll,
+  }), [notifications, unreadCount, addNotification, markAsRead, markAllAsRead, removeNotification, clearAll]);
+
   return (
-    <NotificationContext.Provider
-      value={{
-        notifications,
-        unreadCount,
-        addNotification,
-        markAsRead,
-        markAllAsRead,
-        removeNotification,
-        clearAll,
-      }}
-    >
+    <NotificationContext.Provider value={contextValue}>
       {children}
     </NotificationContext.Provider>
-  )
+  );
 }
 
 export const useNotifications = () => {

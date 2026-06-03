@@ -134,7 +134,19 @@ export default function DashboardPage() {
         {/* Area / Bar chart desktop */}
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
           <ResponsiveContainer width="100%" height={200}>
-            {prefs.grafik === 'Garis (Line)' ? (
+            {prefs.grafik === 'Batang (Bar)' ? (
+              <BarChart data={data?.weeklyChart ?? DUMMY_WEEKLY}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                <YAxis hide />
+                <Tooltip formatter={(v) => formatRupiah(v, prefs)} />
+                <Legend formatter={(val) =>
+                  <span className="text-xs text-gray-500">{val === 'income' ? 'Pemasukan' : 'Pengeluaran'}</span>
+                } />
+                <Bar dataKey="income" fill="#22c55e" radius={[4, 4, 0, 0]} name="income" />
+                <Bar dataKey="expense" fill="#ef4444" radius={[4, 4, 0, 0]} name="expense" />
+              </BarChart>
+            ) : (
               <AreaChart data={data?.weeklyChart ?? DUMMY_WEEKLY}>
                 <defs>
                   <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
@@ -156,18 +168,6 @@ export default function DashboardPage() {
                 <Area type="monotone" dataKey="income" stroke="#22c55e" strokeWidth={2} fill="url(#colorIncome)" name="income" dot={false} />
                 <Area type="monotone" dataKey="expense" stroke="#ef4444" strokeWidth={2} fill="url(#colorExpense)" name="expense" dot={false} />
               </AreaChart>
-            ) : (
-              <BarChart data={data?.weeklyChart ?? DUMMY_WEEKLY}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="week" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                <YAxis hide />
-                <Tooltip formatter={(v) => formatRupiah(v, prefs)} />
-                <Legend formatter={(val) =>
-                  <span className="text-xs text-gray-500">{val === 'income' ? 'Pemasukan' : 'Pengeluaran'}</span>
-                } />
-                <Bar dataKey="income" fill="#22c55e" radius={[4, 4, 0, 0]} name="income" />
-                <Bar dataKey="expense" fill="#ef4444" radius={[4, 4, 0, 0]} name="expense" />
-              </BarChart>
             )}
           </ResponsiveContainer>
         </div>
