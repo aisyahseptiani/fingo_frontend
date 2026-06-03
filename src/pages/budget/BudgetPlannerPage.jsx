@@ -326,6 +326,19 @@ export default function BudgetPlannerPage() {
 
   const budgetData = profile?.preferences?.budgetPlannerData || null
 
+  // Backward compatibility for legacy category names
+  const normalizedBudgetData = budgetData ? {
+    ...budgetData,
+    values: Object.entries(budgetData.values || {}).reduce((acc, [key, val]) => {
+      let newKey = key;
+      if (key === 'Makanan & Minuman') newKey = 'Makanan';
+      if (key === 'Dana Darurat') newKey = 'Tabungan';
+      if (key === 'Kebutuhan Rumah' || key === 'Hobi & Langganan') newKey = 'Lain-lain';
+      acc[newKey] = (acc[newKey] || 0) + val;
+      return acc;
+    }, {})
+  } : null;
+
   const [income, setIncome]           = useState('')
   const [isLoading, setIsLoading]     = useState(false)
   const [showBudget, setShowBudget]   = useState(false)
@@ -384,8 +397,8 @@ export default function BudgetPlannerPage() {
     )
   }
 
-  if (budgetData) {
-    return <ProgressView income={budgetData.income} savedValues={budgetData.values} onReset={handleReset} />
+  if (normalizedBudgetData) {
+    return <ProgressView income={normalizedBudgetData.income} savedValues={normalizedBudgetData.values} onReset={handleReset} />
   }
 
   return (
