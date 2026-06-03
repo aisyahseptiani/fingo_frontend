@@ -14,7 +14,17 @@ const NotificationContext = createContext(null)
 const DEFAULT_NOTIFICATIONS = []
 
 export function NotificationProvider({ children }) {
-  const [notifications, setNotifications] = useState(DEFAULT_NOTIFICATIONS)
+  const [notifications, setNotifications] = useState(() => {
+    try {
+      const saved = localStorage.getItem('fingo_notifications_list')
+      if (saved) return JSON.parse(saved)
+    } catch(e) {}
+    return DEFAULT_NOTIFICATIONS
+  })
+
+  useEffect(() => {
+    localStorage.setItem('fingo_notifications_list', JSON.stringify(notifications))
+  }, [notifications])
 
   // Tambah notifikasi baru (duplikat berdasarkan `id` diabaikan)
   const addNotification = useCallback((notif) => {
