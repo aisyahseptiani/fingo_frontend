@@ -63,6 +63,13 @@ export function useDashboard() {
       let aiSuggestion = null;
       let hasBudgetPlanner = false;
       let budgetByCategory = [];
+
+      // Groups matching BudgetPlannerPage COLUMNS
+      const BUDGET_GROUPS = {
+        Kebutuhan: ['Makanan','Transportasi','Tagihan','Kesehatan'],
+        Keinginan: ['Belanja','Hiburan','Pendidikan','Lain-lain'],
+        Tabungan:  ['Tabungan','Investasi'],
+      };
       
       try {
         const savedBudgetObj = profile?.preferences?.budgetPlannerData?.values;
@@ -71,14 +78,16 @@ export function useDashboard() {
           if (totalSavedBudget > 0) {
             defaultBudget = totalSavedBudget;
             hasBudgetPlanner = true;
-            budgetByCategory = Object.keys(savedBudgetObj)
-              .filter(cat => savedBudgetObj[cat] > 0)
-              .map(cat => ({
-                category: cat,
-                amount: savedBudgetObj[cat],
-                percent: Math.round((savedBudgetObj[cat] / totalSavedBudget) * 100)
-              }))
-              .sort((a, b) => b.amount - a.amount);
+
+            // Group into 3 categories for the pie chart
+            budgetByCategory = Object.entries(BUDGET_GROUPS).map(([group, cats]) => {
+              const amount = cats.reduce((sum, cat) => sum + (savedBudgetObj[cat] || 0), 0);
+              return {
+                category: group,
+                amount,
+                percent: Math.round((amount / totalSavedBudget) * 100)
+              };
+            }).filter(g => g.amount > 0);
           }
           
           let maxOverspendPct = 0;
@@ -133,6 +142,8 @@ export function useDashboard() {
       let incomePrediction = income > 0 ? income + 500000 : 1000000;
       let hasIncomePredictor = false;
       let predictorHistoryData = null;
+      let incomeHistoris = 0;
+      let incomeChangePct = 0;
       try {
         const predictorData = profile?.preferences?.incomePredictorData;
         if (predictorData && Array.isArray(predictorData) && predictorData.length > 0) {
@@ -140,6 +151,8 @@ export function useDashboard() {
             predictorHistoryData = predictorData;
             
             const values = predictorData.map(w => w.amount);
+            incomeHistoris = Math.round(values.reduce((a, b) => a + b, 0) / values.length);
+            
             const last12 = values.slice(-12);
             while(last12.length < 12) {
                last12.unshift(last12[0] || 0);
@@ -159,6 +172,11 @@ export function useDashboard() {
                } else {
                   incomePrediction = predictorData[n - 1].amount;
                }
+            }
+            
+            // Calculate change percentage
+            if (incomeHistoris > 0) {
+              incomeChangePct = Math.round(((incomePrediction - incomeHistoris) / incomeHistoris) * 100);
             }
           }
       } catch (e) {
@@ -185,6 +203,8 @@ export function useDashboard() {
         expenseByCategory,
         budgetByCategory,
         incomePrediction,
+        incomeHistoris,
+        incomeChangePct,
         hasIncomePredictor,
         predictorHistoryData,
         aiSuggestion,

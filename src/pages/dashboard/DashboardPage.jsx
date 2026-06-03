@@ -104,18 +104,26 @@ export default function DashboardPage() {
           <TransactionTable transactions={data?.recentTransactions ?? []} isLoading={isLoading} prefs={prefs} />
           <div className="space-y-4">
             {hasBudget
-              ? <BudgetDonutChart data={data?.budgetByCategory ?? []} total={data?.totalBudget ?? 0} prefs={prefs} />
+              ? <BudgetDonutChart data={data?.budgetByCategory ?? []} total={data?.expense ?? 0} prefs={prefs} />
               : <BudgetSetupCard />
             }
             {hasIncome ? (
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
                 <p className="text-[10px] font-bold text-[#22c55e] tracking-widest uppercase mb-1">Prediksi Income Minggu Ini</p>
-                <p className="text-2xl font-black text-gray-900">{formatRupiah(data?.incomePrediction ?? 1100000, prefs)}</p>
-                <p className="text-xs text-gray-400 mt-0.5 mb-3">
-                  <span className="text-[#22c55e] font-semibold">Berdasarkan AI</span>
-                </p>
-                <div className="h-1.5 bg-gray-100 rounded-full mb-4">
-                  <div className="h-1.5 bg-[#22c55e] rounded-full w-3/4" />
+                <p className="text-2xl font-black text-gray-900">{formatRupiah(data?.incomePrediction ?? 0, prefs)}</p>
+                <div className="flex items-center gap-2 mt-1 mb-3">
+                  <span className="text-xs text-gray-400">
+                    Historis: {formatRupiah(data?.incomeHistoris ?? 0, prefs)}/minggu
+                  </span>
+                  {data?.incomeChangePct !== 0 && (
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${(data?.incomeChangePct ?? 0) >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                      {(data?.incomeChangePct ?? 0) >= 0 ? '↑' : '↓'}{Math.abs(data?.incomeChangePct ?? 0)}%
+                    </span>
+                  )}
+                </div>
+                <div className="h-2 bg-gray-100 rounded-full mb-4 overflow-hidden">
+                  <div className="h-2 bg-gradient-to-r from-[#22c55e] to-[#16a34a] rounded-full transition-all duration-700"
+                    style={{ width: `${Math.min(Math.max(((data?.incomePrediction ?? 0) / Math.max(data?.incomeHistoris ?? 1, 1)) * 50, 15), 100)}%` }} />
                 </div>
                 <Link to="/ai/predictor">
                   <button className="w-full py-2.5 bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-bold rounded-xl transition-colors">
@@ -263,7 +271,7 @@ export default function DashboardPage() {
 
         {/* Donut chart */}
         {hasBudget
-          ? <BudgetDonutChart data={data?.budgetByCategory ?? []} total={data?.totalBudget ?? 0} prefs={prefs} />
+          ? <BudgetDonutChart data={data?.budgetByCategory ?? []} total={data?.expense ?? 0} prefs={prefs} />
           : <BudgetSetupCard />
         }
 
@@ -274,13 +282,21 @@ export default function DashboardPage() {
               Prediksi Income Minggu Ini
             </p>
             <p className="text-2xl font-black text-gray-900">
-              {formatRupiah(data?.incomePrediction ?? 1100000, prefs)}
+              {formatRupiah(data?.incomePrediction ?? 0, prefs)}
             </p>
-            <p className="text-xs text-gray-400 mt-0.5 mb-3">
-              <span className="text-[#22c55e] font-semibold">Berdasarkan AI</span>
-            </p>
-            <div className="h-1.5 bg-gray-100 rounded-full mb-4">
-              <div className="h-1.5 bg-[#22c55e] rounded-full w-3/4" />
+            <div className="flex items-center gap-2 mt-1 mb-3">
+              <span className="text-xs text-gray-400">
+                Historis: {formatRupiah(data?.incomeHistoris ?? 0, prefs)}/minggu
+              </span>
+              {data?.incomeChangePct !== 0 && (
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${(data?.incomeChangePct ?? 0) >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
+                  {(data?.incomeChangePct ?? 0) >= 0 ? '↑' : '↓'}{Math.abs(data?.incomeChangePct ?? 0)}%
+                </span>
+              )}
+            </div>
+            <div className="h-2 bg-gray-100 rounded-full mb-4 overflow-hidden">
+              <div className="h-2 bg-gradient-to-r from-[#22c55e] to-[#16a34a] rounded-full transition-all duration-700"
+                style={{ width: `${Math.min(Math.max(((data?.incomePrediction ?? 0) / Math.max(data?.incomeHistoris ?? 1, 1)) * 50, 15), 100)}%` }} />
             </div>
             <Link to="/ai/predictor">
               <button className="w-full py-2.5 bg-[#22c55e] hover:bg-[#16a34a] text-white text-sm font-bold rounded-xl transition-colors">
