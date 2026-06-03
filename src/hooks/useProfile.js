@@ -8,7 +8,8 @@ export const useGetProfile = (userId) => {
         queryFn: async () => {
             const { data } = await api.get('/user/profile');
             return data;
-        }
+        },
+        enabled: !!userId,
     });
 };
 
