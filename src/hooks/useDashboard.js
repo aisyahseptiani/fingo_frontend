@@ -6,7 +6,10 @@ export function useDashboard() {
   return useQuery({
     queryKey: ['dashboard'],
     queryFn: async () => {
-      const { data: transactions } = await api.get('/transactions')
+      const [ { data: transactions }, { data: profile } ] = await Promise.all([
+        api.get('/transactions'),
+        api.get('/user/profile')
+      ]);
       
       const now = new Date();
       const currentMonth = now.getMonth();
@@ -62,9 +65,8 @@ export function useDashboard() {
       let budgetByCategory = [];
       
       try {
-        const savedBudgetStr = localStorage.getItem('fingo_budget_values');
-        if (savedBudgetStr) {
-          const savedBudgetObj = JSON.parse(savedBudgetStr);
+        const savedBudgetObj = profile?.preferences?.budgetPlannerData?.values;
+        if (savedBudgetObj) {
           const totalSavedBudget = Object.values(savedBudgetObj).reduce((a, b) => a + b, 0);
           if (totalSavedBudget > 0) {
             defaultBudget = totalSavedBudget;
@@ -132,10 +134,8 @@ export function useDashboard() {
       let hasIncomePredictor = false;
       let predictorHistoryData = null;
       try {
-        const savedPredictorStr = localStorage.getItem('fingo_income_predictor_data');
-        if (savedPredictorStr) {
-          const predictorData = JSON.parse(savedPredictorStr);
-          if (Array.isArray(predictorData) && predictorData.length > 0) {
+        const predictorData = profile?.preferences?.incomePredictorData;
+        if (predictorData && Array.isArray(predictorData) && predictorData.length > 0) {
             hasIncomePredictor = true;
             predictorHistoryData = predictorData;
             

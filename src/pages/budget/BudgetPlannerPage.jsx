@@ -2,33 +2,34 @@ import { useState, useEffect } from 'react'
 import {
   Bell, Check, AlertTriangle, ShoppingCart, Car, Zap,
   Heart, Home, Tv, Music, BookOpen, Shield,
-  TrendingUp, Coffee, Utensils
+  TrendingUp, Coffee, Utensils, Loader2
 } from 'lucide-react'
 import { useNotifications } from '../../context/NotificationContext'
 import { useGetTransactions } from '../../hooks/useTransactions'
+import { useAuthContext } from '../../context/AuthContext'
+import { useGetProfile, useUpdateProfile } from '../../hooks/useProfile'
 
 const formatRp = (n) => new Intl.NumberFormat('id-ID').format(Number(n) || 0)
 const parseNum = (str) => Number(String(str).replace(/\./g, '').replace(/[^0-9]/g, '')) || 0
 
 const AI_PROPORTIONS = {
-  'Makanan & Minuman': 0.19, 'Transportasi': 0.10, 'Tagihan': 0.10,
-  'Kesehatan': 0.06, 'Kebutuhan Rumah': 0.05, 'Belanja': 0.17,
-  'Hiburan': 0.10, 'Hobi & Langganan': 0.015, 'Pendidikan': 0.015,
-  'Dana Darurat': 0.15, 'Investasi': 0.05,
+  'Makanan': 0.20, 'Transportasi': 0.10, 'Tagihan': 0.10,
+  'Kesehatan': 0.10, 'Belanja': 0.10, 'Hiburan': 0.10,
+  'Pendidikan': 0.05, 'Lain-lain': 0.05, 'Tabungan': 0.10,
+  'Investasi': 0.10,
 }
 
 const CATEGORY_META = {
-  'Makanan & Minuman': { icon: Utensils,    bg: 'bg-orange-100',  color: 'text-orange-500'  },
-  'Transportasi':      { icon: Car,          bg: 'bg-blue-100',    color: 'text-blue-500'    },
-  'Tagihan':           { icon: Zap,          bg: 'bg-yellow-100',  color: 'text-yellow-600'  },
-  'Kesehatan':         { icon: Heart,        bg: 'bg-red-100',     color: 'text-red-500'     },
-  'Kebutuhan Rumah':   { icon: Home,         bg: 'bg-green-100',   color: 'text-green-600'   },
-  'Belanja':           { icon: ShoppingCart, bg: 'bg-purple-100',  color: 'text-purple-500'  },
-  'Hiburan':           { icon: Tv,           bg: 'bg-pink-100',    color: 'text-pink-500'    },
-  'Hobi & Langganan':  { icon: Music,        bg: 'bg-indigo-100',  color: 'text-indigo-500'  },
-  'Pendidikan':        { icon: BookOpen,     bg: 'bg-cyan-100',    color: 'text-cyan-600'    },
-  'Dana Darurat':      { icon: Shield,       bg: 'bg-teal-100',    color: 'text-teal-600'    },
-  'Investasi':         { icon: TrendingUp,   bg: 'bg-emerald-100', color: 'text-emerald-600' },
+  'Makanan':      { icon: Utensils,    bg: 'bg-orange-100',  color: 'text-orange-500'  },
+  'Transportasi': { icon: Car,         bg: 'bg-blue-100',    color: 'text-blue-500'    },
+  'Tagihan':      { icon: Zap,         bg: 'bg-yellow-100',  color: 'text-yellow-600'  },
+  'Kesehatan':    { icon: Heart,       bg: 'bg-red-100',     color: 'text-red-500'     },
+  'Belanja':      { icon: ShoppingCart,bg: 'bg-purple-100',  color: 'text-purple-500'  },
+  'Hiburan':      { icon: Tv,          bg: 'bg-pink-100',    color: 'text-pink-500'    },
+  'Pendidikan':   { icon: BookOpen,    bg: 'bg-cyan-100',    color: 'text-cyan-600'    },
+  'Lain-lain':    { icon: Coffee,      bg: 'bg-gray-100',    color: 'text-gray-600'    },
+  'Tabungan':     { icon: Shield,      bg: 'bg-teal-100',    color: 'text-teal-600'    },
+  'Investasi':    { icon: TrendingUp,  bg: 'bg-emerald-100', color: 'text-emerald-600' },
 }
 
 const COLUMNS = [
@@ -37,21 +38,21 @@ const COLUMNS = [
     headerBg: 'bg-green-50', headerBorder: 'border-green-100',
     iconBg: 'bg-[#22c55e]', subtitleColor: 'text-[#22c55e]',
     barColor: 'bg-[#22c55e]', badgeBg: 'bg-[#22c55e]/10', badgeText: 'text-[#22c55e]',
-    categories: ['Makanan & Minuman','Transportasi','Tagihan','Kesehatan','Kebutuhan Rumah'],
+    categories: ['Makanan','Transportasi','Tagihan','Kesehatan'],
   },
   {
     key: 'keinginan', title: 'Keinginan', pct: 30, icon: ShoppingCart,
     headerBg: 'bg-orange-50', headerBorder: 'border-orange-100',
     iconBg: 'bg-orange-400', subtitleColor: 'text-orange-500',
     barColor: 'bg-orange-400', badgeBg: 'bg-orange-50', badgeText: 'text-orange-500',
-    categories: ['Belanja','Hiburan','Hobi & Langganan','Pendidikan'],
+    categories: ['Belanja','Hiburan','Pendidikan','Lain-lain'],
   },
   {
     key: 'tabungan', title: 'Tabungan', pct: 20, icon: TrendingUp,
     headerBg: 'bg-blue-50', headerBorder: 'border-blue-100',
     iconBg: 'bg-blue-500', subtitleColor: 'text-blue-500',
     barColor: 'bg-blue-500', badgeBg: 'bg-blue-50', badgeText: 'text-blue-500',
-    categories: ['Dana Darurat','Investasi'],
+    categories: ['Tabungan','Investasi'],
   },
 ]
 
@@ -319,11 +320,13 @@ function ProgressView({ income, savedValues, onReset }) {
 // MAIN EXPORT
 // ════════════════════════════════════════════════════════════════
 export default function BudgetPlannerPage() {
-  const [income, setIncome]           = useState(() => {
-    const draft = localStorage.getItem('fingo_budget_income_draft')
-    const saved = localStorage.getItem('fingo_budget_income')
-    return draft || saved || ''
-  })
+  const { user } = useAuthContext()
+  const { data: profile, isLoading: isProfileLoading } = useGetProfile(user?.id)
+  const { mutate: updateProfile, isPending: isUpdating } = useUpdateProfile(user?.id)
+
+  const budgetData = profile?.preferences?.budgetPlannerData || null
+
+  const [income, setIncome]           = useState('')
   const [isLoading, setIsLoading]     = useState(false)
   const [showBudget, setShowBudget]   = useState(false)
   const [usedAI, setUsedAI]           = useState(false)
@@ -332,57 +335,57 @@ export default function BudgetPlannerPage() {
   const aiRec     = getAIRec(incomeNum)
 
   const initValues = () => {
-    const draft = localStorage.getItem('fingo_budget_values_draft')
-    if (draft) return JSON.parse(draft)
     return Object.fromEntries(COLUMNS.flatMap(c => c.categories).map(cat => [cat, 0]))
   }
 
   const [budgetValues, setBudgetValues] = useState(initValues)
-  const [savedValues, setSavedValues]   = useState(() => {
-    const saved = localStorage.getItem('fingo_budget_values')
-    return saved ? JSON.parse(saved) : {}
-  })
-  const [savedBudget, setSavedBudget] = useState(() => {
-    return !!localStorage.getItem('fingo_budget_values')
-  })
 
   const handleAturBudget = () => {
     if (!incomeNum) return
     setIsLoading(true); setShowBudget(false)
-    setSavedBudget(false); setUsedAI(false)
+    setUsedAI(false)
     setBudgetValues(initValues())
     setTimeout(() => { setIsLoading(false); setShowBudget(true) }, 1200)
   }
   const handleUseAI = () => { setBudgetValues({ ...aiRec }); setUsedAI(true) }
   const handleSave  = () => { 
-    setSavedValues({ ...budgetValues }); 
-    setSavedBudget(true);
-    localStorage.setItem('fingo_budget_income', income);
-    localStorage.setItem('fingo_budget_values', JSON.stringify(budgetValues));
-    localStorage.removeItem('fingo_budget_income_draft');
-    localStorage.removeItem('fingo_budget_values_draft');
+    updateProfile({
+      preferences: {
+        ...(profile?.preferences || {}),
+        budgetPlannerData: {
+          income: incomeNum,
+          values: budgetValues
+        }
+      }
+    })
   }
   const handleReset = () => { 
-    setSavedBudget(false); 
-    setShowBudget(true);
-    localStorage.removeItem('fingo_budget_income');
-    localStorage.removeItem('fingo_budget_values');
-    localStorage.removeItem('fingo_budget_income_draft');
-    localStorage.removeItem('fingo_budget_values_draft');
+    updateProfile({
+      preferences: {
+        ...(profile?.preferences || {}),
+        budgetPlannerData: null
+      }
+    })
     setIncome('');
     setBudgetValues(initValues());
+    setShowBudget(false);
   }
   const updateValue = (cat, val) => { 
-    setBudgetValues(p => {
-      const next = { ...p, [cat]: val }
-      localStorage.setItem('fingo_budget_values_draft', JSON.stringify(next))
-      return next
-    })
+    setBudgetValues(p => ({ ...p, [cat]: val }))
     setUsedAI(false) 
   }
 
-  if (savedBudget) {
-    return <ProgressView income={incomeNum} savedValues={savedValues} onReset={handleReset} />
+  if (isProfileLoading) {
+    return (
+      <div className="w-full h-[60vh] flex flex-col items-center justify-center">
+        <Loader2 size={32} className="animate-spin text-[#22c55e]" />
+        <p className="text-gray-400 text-sm mt-4">Memuat data Budget...</p>
+      </div>
+    )
+  }
+
+  if (budgetData) {
+    return <ProgressView income={budgetData.income} savedValues={budgetData.values} onReset={handleReset} />
   }
 
   return (
@@ -405,9 +408,7 @@ export default function BudgetPlannerPage() {
             value={income ? formatRp(parseNum(income)) : ''}
             onChange={e => { 
               setIncome(e.target.value); 
-              localStorage.setItem('fingo_budget_income_draft', e.target.value);
               setShowBudget(false); 
-              setSavedBudget(false) 
             }}
             placeholder="0"
             className="flex-1 text-2xl lg:text-3xl font-black text-gray-900 outline-none placeholder:text-gray-300 border-none bg-transparent min-w-0"
@@ -417,7 +418,7 @@ export default function BudgetPlannerPage() {
             disabled={!incomeNum || isLoading}
             className="px-4 py-2.5 rounded-xl border border-[#22c55e] text-[#22c55e] text-sm font-semibold hover:bg-[#22c55e]/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
           >
-            {isLoading && <span className="w-4 h-4 border-2 border-[#22c55e] border-t-transparent rounded-full animate-spin" />}
+            {isLoading && <Loader2 size={16} className="animate-spin" />}
             <span className="hidden sm:inline">Atur Budget</span>
             <span className="sm:hidden">Atur</span>
           </button>
@@ -507,8 +508,9 @@ export default function BudgetPlannerPage() {
               <span className="hidden sm:inline">Gunakan Rekomendasi Ai</span>
               <span className="sm:hidden">Rekomendasi AI</span>
             </button>
-            <button onClick={handleSave}
-              className="flex-1 lg:flex-none lg:px-8 py-3 bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold rounded-xl transition-colors text-sm">
+            <button onClick={handleSave} disabled={isUpdating}
+              className="flex-1 lg:flex-none lg:px-8 py-3 bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold rounded-xl transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              {isUpdating && <Loader2 size={16} className="animate-spin" />}
               Simpan
             </button>
           </div>

@@ -13,6 +13,8 @@ const EXPENSE_CATEGORIES = [
   'Pendidikan',
   'Kesehatan',
   'Tagihan',
+  'Tabungan',
+  'Investasi',
   'Lain-lain',
 ]
 
