@@ -210,21 +210,29 @@ export default function TransactionHistoryPage() {
     category: t.category,
     type: t.type.toLowerCase(),
     date: new Date(t.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+    rawDate: new Date(t.date),
     method: 'Transfer', // Default method for now
     isImpulsive: t.type.toLowerCase() === 'expense' && ['Hiburan', 'Belanja', 'Lain-lain', 'Lainnya'].includes(t.category)
   }))
 
-  const currentDate = new Date();
-  const currentMonthName = currentDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
-
+  const [selectedDate, setSelectedDate] = useState(new Date())
   const [search, setSearch]           = useState('')
   const [activeFilter, setActiveFilter] = useState('Semua')
-  const [activePeriod, setActivePeriod] = useState('Bulan ini')
   const [page, setPage]               = useState(1)
   const [editTrx, setEditTrx]         = useState(null)
   const [deleteTrx, setDeleteTrx]     = useState(null)
 
-  const filtered = transactions.filter(t => {
+  const handlePrevMonth = () => { setSelectedDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1)); setPage(1) }
+  const handleNextMonth = () => { setSelectedDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1)); setPage(1) }
+  const currentMonthName = selectedDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })
+  const isCurrentMonth = selectedDate.getMonth() === new Date().getMonth() && selectedDate.getFullYear() === new Date().getFullYear()
+
+  const filteredByMonth = transactions.filter(t => {
+      const d = t.rawDate;
+      return d.getMonth() === selectedDate.getMonth() && d.getFullYear() === selectedDate.getFullYear();
+  })
+
+  const filtered = filteredByMonth.filter(t => {
     const matchSearch = t.description.toLowerCase().includes(search.toLowerCase())
     if (activeFilter === 'Semua')        return matchSearch
     if (activeFilter === 'Pemasukan')    return matchSearch && t.type === 'income'
@@ -236,9 +244,24 @@ export default function TransactionHistoryPage() {
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE))
   const paginated  = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE)
 
-  const totalIncome  = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0)
-  const totalExpense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0)
+  const totalIncome  = filteredByMonth.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0)
+  const totalExpense = filteredByMonth.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0)
   const saldo        = totalIncome - totalExpense
+
+  const MonthNavigator = ({ mobile }) => (
+    <div className={`flex items-center justify-between bg-white border border-gray-200 rounded-xl ${mobile ? 'p-1' : 'p-1.5'} gap-2 shrink-0`}>
+      <button onClick={handlePrevMonth} className={`flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors ${mobile ? 'w-8 h-8' : 'w-9 h-9'}`}>
+        <ChevronLeft size={mobile ? 16 : 18} className="text-gray-500" />
+      </button>
+      <div className={`font-bold text-gray-800 ${mobile ? 'text-xs' : 'text-sm'} text-center min-w-[110px]`}>
+        {currentMonthName}
+      </div>
+      <button onClick={handleNextMonth} disabled={isCurrentMonth}
+        className={`flex items-center justify-center rounded-lg transition-colors ${mobile ? 'w-8 h-8' : 'w-9 h-9'} ${isCurrentMonth ? 'opacity-30 cursor-not-allowed' : 'hover:bg-gray-100'}`}>
+        <ChevronRight size={mobile ? 16 : 18} className="text-gray-500" />
+      </button>
+    </div>
+  )
 
   const FilterChips = () => (
     <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
@@ -378,8 +401,8 @@ export default function TransactionHistoryPage() {
         {/* Stat cards */}
         <div className="grid grid-cols-3 gap-4">
           {[
-            { label: 'Total Pemasukan', value: totalIncome,  sub: `${transactions.filter(t=>t.type==='income').length} Transaksi`,  subColor: 'text-[#22c55e]', border: 'border-l-[#22c55e]', icon: TrendingUp,   iconBg: 'bg-green-100',  iconColor: 'text-green-600' },
-            { label: 'Total Pengeluaran', value: totalExpense, sub: `${transactions.filter(t=>t.type==='expense').length} Transaksi`, subColor: 'text-red-500',   border: 'border-l-red-500',  icon: TrendingDown, iconBg: 'bg-red-100',    iconColor: 'text-red-500'  },
+            { label: 'Total Pemasukan', value: totalIncome,  sub: `${filteredByMonth.filter(t=>t.type==='income').length} Transaksi`,  subColor: 'text-[#22c55e]', border: 'border-l-[#22c55e]', icon: TrendingUp,   iconBg: 'bg-green-100',  iconColor: 'text-green-600' },
+            { label: 'Total Pengeluaran', value: totalExpense, sub: `${filteredByMonth.filter(t=>t.type==='expense').length} Transaksi`, subColor: 'text-red-500',   border: 'border-l-red-500',  icon: TrendingDown, iconBg: 'bg-red-100',    iconColor: 'text-red-500'  },
             { label: 'Sisa Saldo',       value: saldo,        sub: saldo >= 0 ? 'Net Positif' : 'Net Negatif',                       subColor: saldo >= 0 ? 'text-[#22c55e]' : 'text-red-500', border: 'border-l-blue-500', icon: Wallet, iconBg: 'bg-blue-100', iconColor: 'text-blue-600' },
           ].map((s, i) => (
             <div key={i} className={`bg-white rounded-xl border border-gray-100 border-l-4 ${s.border} p-5 shadow-sm flex items-center gap-4`}>
@@ -403,13 +426,7 @@ export default function TransactionHistoryPage() {
               onChange={e => { setSearch(e.target.value); setPage(1) }}
               className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:border-[#22c55e] focus:ring-2 focus:ring-[#22c55e]/10 placeholder:text-gray-300" />
           </div>
-          {['Minggu ini', 'Bulan ini'].map(p => (
-            <button key={p} onClick={() => setActivePeriod(p)}
-              className={`px-4 py-2.5 rounded-xl text-sm font-medium border transition-all
-                ${activePeriod === p ? 'bg-[#22c55e]/10 border-[#22c55e] text-[#22c55e]' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}>
-              {p}
-            </button>
-          ))}
+          <MonthNavigator mobile={false} />
         </div>
 
         <FilterChips />
@@ -461,12 +478,12 @@ export default function TransactionHistoryPage() {
           <div className="bg-white rounded-xl border border-gray-100 border-l-4 border-l-[#22c55e] p-3.5 shadow-sm">
             <p className="text-xs text-gray-400">Pemasukan</p>
             <p className="text-base font-black text-gray-900 mt-0.5">{formatRp(totalIncome)}</p>
-            <p className="text-[10px] text-[#22c55e] font-semibold mt-0.5">{transactions.filter(t=>t.type==='income').length} Transaksi</p>
+            <p className="text-[10px] text-[#22c55e] font-semibold mt-0.5">{filteredByMonth.filter(t=>t.type==='income').length} Transaksi</p>
           </div>
           <div className="bg-white rounded-xl border border-gray-100 border-l-4 border-l-red-500 p-3.5 shadow-sm">
             <p className="text-xs text-gray-400">Pengeluaran</p>
             <p className="text-base font-black text-gray-900 mt-0.5">{formatRp(totalExpense)}</p>
-            <p className="text-[10px] text-red-500 font-semibold mt-0.5">{transactions.filter(t=>t.type==='expense').length} Transaksi</p>
+            <p className="text-[10px] text-red-500 font-semibold mt-0.5">{filteredByMonth.filter(t=>t.type==='expense').length} Transaksi</p>
           </div>
           <div className="bg-white rounded-xl border border-gray-100 border-l-4 border-l-blue-500 p-3.5 shadow-sm col-span-2">
             <p className="text-xs text-gray-400">Sisa Saldo</p>
@@ -486,15 +503,7 @@ export default function TransactionHistoryPage() {
         </div>
 
         {/* Period toggle */}
-        <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
-          {['Minggu ini', 'Bulan ini'].map(p => (
-            <button key={p} onClick={() => setActivePeriod(p)}
-              className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all
-                ${activePeriod === p ? 'bg-white text-[#22c55e] shadow-sm' : 'text-gray-500'}`}>
-              {p}
-            </button>
-          ))}
-        </div>
+        <MonthNavigator mobile={true} />
 
         <FilterChips />
 
