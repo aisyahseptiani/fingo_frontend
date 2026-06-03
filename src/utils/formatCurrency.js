@@ -1,7 +1,6 @@
 export const formatRupiah = (amount, prefs = {}) => {
-  const isUSD = prefs.mataUang === 'USD ($)';
+  const currency = prefs.matauang || 'IDR';
   const locale = prefs.pemisah === 'Koma (1,000,000)' ? 'en-US' : 'id-ID';
-  const currency = isUSD ? 'USD' : 'IDR';
 
   if (prefs.formatPendek) {
     return new Intl.NumberFormat(locale, {

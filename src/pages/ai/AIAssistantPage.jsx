@@ -4,11 +4,12 @@ import fingoLogo from '../../assets/images/fingo-logo.png'
 
 import { useAuthContext } from '../../context/AuthContext'
 import { useDashboard } from '../../hooks/useDashboard'
+import { useGetProfile } from '../../hooks/useProfile'
 import { chatWithAi } from '../../services/fingoAi'
 
-const QUICK_PROMPTS = [
+const getQuickPrompts = (jobType) => [
   'Ringkasan keuanganku', 'Tips hemat bulan ini',
-  'Tip nabung gig worker', 'Analisis pengeluaran',
+  `Tip nabung ${jobType ? jobType.toLowerCase() : 'pekerja'}`, 'Analisis pengeluaran',
   'Rencana darurat', 'Cek kesehatan keuangan',
 ]
 
@@ -28,6 +29,7 @@ function formatMessage(text) {
 export default function AIAssistantPage() {
   const { user } = useAuthContext()
   const { data: dashboardData } = useDashboard()
+  const { data: profile } = useGetProfile(user?.id)
   
   const [messages, setMessages] = useState([
     {
@@ -72,7 +74,8 @@ export default function AIAssistantPage() {
         income: dashboardData?.income || 0,
         expense: dashboardData?.expense || 0,
         budget_remaining: dashboardData?.balance || 0,
-        impulsive_count: dashboardData?.impulsiveCount || 0
+        impulsive_count: dashboardData?.impulsiveCount || 0,
+        job_type: profile?.jobType || 'Umum'
       };
       const response = await chatWithAi(text, financialContext);
       
@@ -140,7 +143,7 @@ export default function AIAssistantPage() {
 
           {/* Quick prompts */}
           <div className="flex gap-2 mt-3 overflow-x-auto scrollbar-hide pb-0.5">
-            {QUICK_PROMPTS.map(prompt => (
+            {getQuickPrompts(profile?.jobType).map(prompt => (
               <button key={prompt} onClick={() => sendMessage(prompt)}
                 className="shrink-0 px-3 py-1.5 rounded-full border border-gray-200 bg-white text-xs text-gray-600 hover:border-[#22c55e] hover:text-[#22c55e] transition-colors whitespace-nowrap">
                 {prompt}

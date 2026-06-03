@@ -543,12 +543,43 @@ function AkunSettings({ onBack }) {
             </select>
           </div>
 
-          <Field
-            label="Platform"
-            value={form.platform}
-            onChange={set('platform')}
-            optional
-          />
+          <div>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
+              Platform <span className="text-gray-400 normal-case ml-1 font-medium">(Opsional)</span>
+            </label>
+            <select
+              value={form.platform}
+              onChange={set('platform')}
+              className="
+                w-full
+                px-4 py-3
+                rounded-xl
+                border border-gray-200
+                text-sm
+                outline-none
+                focus:border-[#22c55e]
+                focus:ring-2
+                focus:ring-[#22c55e]/10
+                bg-white
+              "
+            >
+              <option value="">Pilih Platform (Opsional)</option>
+              {[
+                'Gojek',
+                'Grab',
+                'Maxim',
+                'Shopee',
+                'Tokopedia',
+                'TikTok',
+                'Upwork',
+                'Fiverr',
+                'Freelancer',
+                'Lainnya'
+              ].map((p) => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* SAVE BUTTON */}
@@ -1575,13 +1606,12 @@ function PreferensiSettings({ onBack }) {
             </div>
 
             <select
-              value={prefs.grafik}
+              value={prefs.grafik || 'Garis (Line)'}
               onChange={(e) => setValue('grafik', e.target.value)}
               className="px-3 py-2 rounded-xl border border-gray-200 text-xs outline-none"
             >
-              <option>Gelap</option>
-              <option>Terang</option>
-              <option>Otomatis</option>
+              <option>Garis (Line)</option>
+              <option>Batang (Bar)</option>
             </select>
           </div>
 
@@ -1701,12 +1731,30 @@ function PreferensiSettings({ onBack }) {
 // INTEGRASI
 // ════════════════════════════════════════════════════════════════
 function IntegrasiSettings({ onBack }) {
-  const [wallets, setWallets] = useState([
+  const { user } = useAuthContext();
+  const { data: profile } = useGetProfile(user?.id);
+  const { mutate: updateProfile, isPending } = useUpdateProfile(user?.id);
+
+  const wallets = profile?.preferences?.wallets || [
     { id: 1, name: 'Gopay',      connected: true },
     { id: 2, name: 'Dana',       connected: true },
     { id: 3, name: 'BCA Mobile', connected: true },
-  ])
-  const toggle = (id) => setWallets(p => p.map(w => w.id === id ? { ...w, connected: !w.connected } : w))
+  ];
+
+  const toggle = (id) => {
+    const newWallets = wallets.map(w => w.id === id ? { ...w, connected: !w.connected } : w);
+    const newPrefs = { ...profile?.preferences, wallets: newWallets };
+    updateProfile({ preferences: newPrefs });
+  };
+
+  const handleAdd = () => {
+    const name = window.prompt('Masukkan nama layanan (misal: ShopeePay):');
+    if (name) {
+      const newWallets = [...wallets, { id: Date.now(), name, connected: true }];
+      const newPrefs = { ...profile?.preferences, wallets: newWallets };
+      updateProfile({ preferences: newPrefs });
+    }
+  };
 
   return (
     <div className="p-6">
@@ -1731,8 +1779,8 @@ function IntegrasiSettings({ onBack }) {
                 <Wallet size={16} className="text-gray-500" />
               </div>
               <p className="flex-1 font-semibold text-gray-900">{w.name}</p>
-              <button onClick={() => toggle(w.id)}
-                className={`px-4 py-1.5 rounded-xl border text-sm font-semibold transition-colors ${
+              <button onClick={() => toggle(w.id)} disabled={isPending}
+                className={`px-4 py-1.5 rounded-xl border text-sm font-semibold transition-colors disabled:opacity-50 ${
                   w.connected
                     ? 'border-[#22c55e] text-[#22c55e] hover:bg-[#22c55e]/10'
                     : 'bg-[#22c55e] border-[#22c55e] text-white hover:bg-[#16a34a]'
@@ -1743,12 +1791,7 @@ function IntegrasiSettings({ onBack }) {
           ))}
         </div>
         <div className="flex justify-end">
-          <button onClick={() => {
-            const name = window.prompt('Masukkan nama layanan (misal: ShopeePay):');
-            if (name) {
-               setWallets(p => [...p, { id: Date.now(), name, connected: true }])
-            }
-          }} className="flex items-center gap-2 px-5 py-2.5 bg-[#22c55e] hover:bg-[#16a34a] text-white font-semibold text-sm rounded-xl transition-colors">
+          <button onClick={handleAdd} disabled={isPending} className="flex items-center gap-2 px-5 py-2.5 bg-[#22c55e] hover:bg-[#16a34a] text-white font-semibold text-sm rounded-xl transition-colors disabled:opacity-50">
             <Plus size={15} /> Tambah
           </button>
         </div>

@@ -58,6 +58,33 @@ export default function ProfilePage() {
 
   const totalScore = Math.round(ACTIVITY_SCORES.reduce((sum, a) => sum + a.percent, 0) / ACTIVITY_SCORES.length)
 
+  // Dynamic health label
+  let healthLabel = 'Sangat Baik'
+  let healthColor = 'text-[#22c55e]'
+  let healthArrow = '↑'
+  if (totalScore < 40) {
+    healthLabel = 'Perlu Perhatian'
+    healthColor = 'text-red-500'
+    healthArrow = '↓'
+  } else if (totalScore < 60) {
+    healthLabel = 'Cukup'
+    healthColor = 'text-yellow-500'
+    healthArrow = '→'
+  } else if (totalScore < 80) {
+    healthLabel = 'Baik'
+    healthColor = 'text-[#22c55e]'
+    healthArrow = '↗'
+  }
+
+  // Dynamic AI Suggestion
+  let aiSuggestionTarget = null;
+  if (TARGETS.length > 0) {
+    const activeTarget = TARGETS.reduce((prev, current) => (prev.percent > current.percent) ? prev : current);
+    aiSuggestionTarget = `Target ${activeTarget.label} kamu sudah mencapai ${activeTarget.percent}%. Terus pertahankan konsistensi menabung untuk mencapainya lebih cepat!`;
+  } else {
+    aiSuggestionTarget = `Kamu belum memiliki target keuangan aktif. Pertimbangkan untuk membuat target seperti dana darurat atau gadget impian untuk motivasi menabung.`;
+  }
+
   // =========================
   // NEW STATE
   // =========================
@@ -122,8 +149,8 @@ export default function ProfilePage() {
               {user?.email ?? 'Tidak ada email'}
             </p>
             <p className="text-gray-400 text-sm mt-1">Bergabung sejak {new Date(user?.createdAt || Date.now()).getFullYear()}</p>
-            <span className="inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full border border-[#22c55e] text-[#22c55e] text-xs font-semibold">
-              ✓ Pengguna Terverifikasi
+            <span className={`inline-flex items-center gap-1.5 mt-3 px-3 py-1.5 rounded-full border text-xs font-semibold ${user?.emailVerified ? 'border-[#22c55e] text-[#22c55e]' : 'border-gray-300 text-gray-500'}`}>
+              {user?.emailVerified ? '✓ Pengguna Terverifikasi' : 'Belum Terverifikasi'}
             </span>
           </div>
           <div className="shrink-0 flex flex-col items-center">
@@ -139,8 +166,8 @@ export default function ProfilePage() {
               </div>
             </div>
             <p className="text-xs text-gray-400 mt-2 text-center">Kesehatan Keuangan</p>
-            <p className="text-xs text-[#22c55e] font-semibold">↑ Sangat Baik</p>
-            <p className="text-[10px] text-gray-400">+5 dari bulan lalu</p>
+            <p className={`text-xs ${healthColor} font-semibold`}>{healthArrow} {healthLabel}</p>
+            <p className="text-[10px] text-gray-400">Berdasarkan aktivitas</p>
           </div>
         </div>
 
@@ -179,13 +206,13 @@ export default function ProfilePage() {
                   <span className="text-[9px] text-gray-400">Skor</span>
                 </div>
               </div>
-              <p className="text-[10px] text-[#22c55e] font-semibold mt-1">Sangat Baik</p>
+              <p className={`text-[10px] ${healthColor} font-semibold mt-1`}>{healthLabel}</p>
             </div>
           </div>
 
           <div className="mt-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#22c55e] text-[#22c55e] text-xs font-semibold">
-              ✓ Pengguna Terverifikasi
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold ${user?.emailVerified ? 'border-[#22c55e] text-[#22c55e]' : 'border-gray-300 text-gray-500'}`}>
+              {user?.emailVerified ? '✓ Pengguna Terverifikasi' : 'Belum Terverifikasi'}
             </span>
           </div>
         </div>
@@ -286,9 +313,7 @@ export default function ProfilePage() {
               Saran AI untuk Target
             </p>
             <p className="text-xs lg:text-sm text-gray-600 leading-relaxed">
-              Dengan pola pemasukanmu yang naik, tambahkan{' '}
-              <strong>Rp 300.000/bulan</strong> ke dana darurat. Target laptop bisa tercapai{' '}
-              <strong>bulan Juni</strong> — 2 bulan lebih cepat dari rencana!
+              {aiSuggestionTarget}
             </p>
           </div>
         </div>

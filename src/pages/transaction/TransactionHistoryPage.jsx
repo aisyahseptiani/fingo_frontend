@@ -202,8 +202,11 @@ export default function TransactionHistoryPage() {
     type: t.type.toLowerCase(),
     date: new Date(t.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
     method: 'Transfer', // Default method for now
-    isImpulsive: false
+    isImpulsive: t.type.toLowerCase() === 'expense' && ['Hiburan', 'Belanja', 'Lain-lain', 'Lainnya'].includes(t.category)
   }))
+
+  const currentDate = new Date();
+  const currentMonthName = currentDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
 
   const [search, setSearch]           = useState('')
   const [activeFilter, setActiveFilter] = useState('Semua')
@@ -405,7 +408,7 @@ export default function TransactionHistoryPage() {
         {/* Table */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h2 className="font-bold text-gray-900">Mei 2026</h2>
+            <h2 className="font-bold text-gray-900">{currentMonthName}</h2>
             <span className="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full font-medium">
               {filtered.length} transaksi
             </span>
@@ -489,7 +492,7 @@ export default function TransactionHistoryPage() {
         {/* List */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-            <h2 className="font-bold text-gray-900 text-sm">Mei 2026</h2>
+            <h2 className="font-bold text-gray-900 text-sm">{currentMonthName}</h2>
             <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full font-medium">{filtered.length} transaksi</span>
           </div>
           <div className="divide-y divide-gray-50">

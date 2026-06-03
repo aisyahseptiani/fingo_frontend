@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { signIn, signUp, signOut } from '../lib/auth-client'
+import { useQueryClient } from '@tanstack/react-query'
 
 export function useLogin() {
   const navigate = useNavigate()
@@ -62,11 +63,13 @@ export function useRegister() {
 
 export function useLogout() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [isPending, setIsPending] = useState(false)
 
   const mutate = async () => {
     setIsPending(true)
     await signOut()
+    queryClient.clear()
     navigate('/login')
     setIsPending(false)
   }
