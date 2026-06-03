@@ -1657,23 +1657,7 @@ function PreferensiSettings({ onBack }) {
             />
           </div>
 
-          {/* Sembunyikan Saldo */}
-          <div className="flex items-center gap-3 px-5 py-4 min-h-[78px]">
-            <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
-              <EyeOff size={18} className="text-gray-600" />
-            </div>
 
-            <div className="flex-1 flex items-center">
-              <p className="font-semibold text-gray-900 text-sm">
-                Sembunyikan Saldo
-              </p>
-            </div>
-
-            <Toggle
-              checked={prefs.sembunyiSaldo}
-              onChange={(v) => setValue('sembunyiSaldo', v)}
-            />
-          </div>
 
           {/* Mata Uang */}
           <div className="flex items-center gap-3 px-5 py-4 min-h-[78px]">
@@ -1779,19 +1763,15 @@ function IntegrasiSettings({ onBack }) {
                 <Wallet size={16} className="text-gray-500" />
               </div>
               <p className="flex-1 font-semibold text-gray-900">{w.name}</p>
-              <button onClick={() => toggle(w.id)} disabled={isPending}
-                className={`px-4 py-1.5 rounded-xl border text-sm font-semibold transition-colors disabled:opacity-50 ${
-                  w.connected
-                    ? 'border-[#22c55e] text-[#22c55e] hover:bg-[#22c55e]/10'
-                    : 'bg-[#22c55e] border-[#22c55e] text-white hover:bg-[#16a34a]'
-                }`}>
-                {w.connected ? 'Terhubung' : 'Hubungkan'}
+              <button disabled
+                className="px-4 py-1.5 rounded-xl border border-gray-200 text-gray-400 bg-gray-50 text-sm font-semibold cursor-not-allowed">
+                Coming Soon
               </button>
             </div>
           ))}
         </div>
         <div className="flex justify-end">
-          <button onClick={handleAdd} disabled={isPending} className="flex items-center gap-2 px-5 py-2.5 bg-[#22c55e] hover:bg-[#16a34a] text-white font-semibold text-sm rounded-xl transition-colors disabled:opacity-50">
+          <button disabled className="flex items-center gap-2 px-5 py-2.5 bg-gray-200 text-gray-400 font-semibold text-sm rounded-xl cursor-not-allowed">
             <Plus size={15} /> Tambah
           </button>
         </div>

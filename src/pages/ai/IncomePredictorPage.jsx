@@ -5,6 +5,8 @@ import {
 } from 'recharts'
 import { CheckCircle, ChevronRight, Plus, TrendingUp, Zap, BarChart2, Target, Loader2 } from 'lucide-react'
 import { predictIncomeAi } from '../../services/fingoAi'
+import { useAuthContext } from '../../context/AuthContext'
+import { useGetProfile, useUpdateProfile } from '../../hooks/useProfile'
 
 const formatRp    = (n) => new Intl.NumberFormat('id-ID').format(Number(n) || 0)
 const parseNum    = (s) => Number(String(s).replace(/\./g, '').replace(/[^0-9]/g, '')) || 0
@@ -71,7 +73,7 @@ function OnboardingForm({ onComplete }) {
     if (saved) return JSON.parse(saved);
     const initialWeeks = [];
     for (let i = 4; i >= 1; i--) {
-      initialWeeks.push({ amount: '', source: '', label: i === 1 ? 'Minggu lalu' : `${i} Minggu lalu` });
+      initialWeeks.push({ amount: '', source: '', label: `${i} Minggu lalu` });
     }
     return initialWeeks;
   })
@@ -233,10 +235,10 @@ function PredictorDashboard({ historyData, onAddWeek, onReset }) {
     // Only display the last 8-12 weeks in chart so it doesn't get too cramped
     const displayCount = Math.min(n, 12)
     const hist = historyData.slice(-displayCount).map((w, i, arr) => ({
-      label: i === arr.length - 1 ? 'Mg ini' : `Mg ${arr.length - i}`,
+      label: i === arr.length - 1 ? '1 Mg lalu' : `Mg -${arr.length - i}`,
       value: w.amount,
     }))
-    const bridge = { label: 'Mg ini', value: latest, pred: latest }
+    const bridge = { label: '1 Mg lalu', value: latest, pred: latest }
     const pred   = predictions.map((v, i) => ({ label: `+${i + 1}`, pred: v }))
     return [...hist.slice(0, -1), bridge, ...pred]
   }, [historyData, predictions, latest])
@@ -250,7 +252,7 @@ function PredictorDashboard({ historyData, onAddWeek, onReset }) {
   }
 
   const tableRows = [...historyData].reverse().map((w, i, arr) => ({
-    period:    i === 0 ? 'Minggu ini' : i === 1 ? 'Minggu lalu' : `${i} Minggu lalu`,
+    period:    i === 0 ? '1 Minggu lalu' : `${i + 1} Minggu lalu`,
     amount:    w.amount,
     source:    w.source,
     highlight: i === 0,
@@ -331,7 +333,7 @@ function PredictorDashboard({ historyData, onAddWeek, onReset }) {
             <Line type="monotone" dataKey="value" stroke="#22c55e" strokeWidth={2.5}
               dot={(props) => {
                 const { cx, cy, index } = props
-                const isLast = chartData[index]?.label === 'Mg ini'
+                const isLast = chartData[index]?.label === '1 Mg lalu'
                 return <circle key={`h-${index}`} cx={cx} cy={cy}
                   r={isLast ? 5 : 3} fill={isLast ? '#22c55e' : '#fff'}
                   stroke="#22c55e" strokeWidth={isLast ? 3 : 2} />
@@ -464,31 +466,43 @@ function PredictorDashboard({ historyData, onAddWeek, onReset }) {
 
 // ── ROOT ──────────────────────────────────────────────────────────────────────
 export default function IncomePredictorPage() {
-  const [historyData, setHistoryData] = useState(() => {
-    const saved = localStorage.getItem('fingo_income_predictor_data')
-    return saved ? JSON.parse(saved) : null
-  })
+  const { user } = useAuthContext()
+  const { data: profile, isLoading } = useGetProfile(user?.id)
+  const { mutate: updateProfile } = useUpdateProfile(user?.id)
+
+  const historyData = profile?.preferences?.incomePredictorData || null
 
   const handleComplete = (data) => {
-    setHistoryData(data)
-    localStorage.setItem('fingo_income_predictor_data', JSON.stringify(data))
+    updateProfile({
+      preferences: { ...(profile?.preferences || {}), incomePredictorData: data }
+    })
+    localStorage.removeItem('fingo_income_predictor_draft')
   }
 
   const handleAddWeek = (w) => {
-    setHistoryData(prev => {
-      const next = [...prev, w]
-      localStorage.setItem('fingo_income_predictor_data', JSON.stringify(next))
-      return next
+    const next = [...(historyData || []), w]
+    updateProfile({
+      preferences: { ...(profile?.preferences || {}), incomePredictorData: next }
     })
   }
 
   const handleReset = () => {
-    setHistoryData(null)
-    localStorage.removeItem('fingo_income_predictor_data')
+    updateProfile({
+      preferences: { ...(profile?.preferences || {}), incomePredictorData: null }
+    })
     localStorage.removeItem('fingo_income_predictor_draft')
   }
 
-  if (!historyData) {
+  if (isLoading) {
+    return (
+      <div className="w-full h-[60vh] flex flex-col items-center justify-center">
+        <Loader2 size={32} className="animate-spin text-[#22c55e]" />
+        <p className="text-gray-400 text-sm mt-4">Memuat data AI...</p>
+      </div>
+    )
+  }
+
+  if (!historyData || historyData.length === 0) {
     return <OnboardingForm onComplete={handleComplete} />
   }
 

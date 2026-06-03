@@ -1,9 +1,9 @@
 // pages/dashboard/DashboardPage.jsx
 import { useEffect } from 'react'
-import { Bell, Plus, ChevronRight, TrendingUp, TrendingDown, Zap } from 'lucide-react'
+import { Bell, Plus, ChevronRight, TrendingUp, TrendingDown, Zap, Eye, EyeOff } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuthContext } from '../../context/AuthContext'
-import { useGetProfile } from '../../hooks/useProfile'
+import { useGetProfile, useUpdateProfile } from '../../hooks/useProfile'
 import { useDashboard } from '../../hooks/useDashboard'
 import { formatRupiah } from '../../utils/formatCurrency'
 import { formatDateShort } from '../../utils/formatDate'
@@ -43,6 +43,14 @@ export default function DashboardPage() {
   const prefs = profile?.preferences || {}
   const hideBalance = prefs.sembunyiSaldo === true
   
+  const { mutate: updateProfile } = useUpdateProfile(user?.id)
+  
+  const toggleHideBalance = () => {
+    updateProfile({
+      preferences: { ...prefs, sembunyiSaldo: !hideBalance }
+    })
+  }
+  
   const greeting = () => {
     const h = new Date().getHours()
     if (h < 11) return 'Selamat pagi'
@@ -70,7 +78,14 @@ export default function DashboardPage() {
 
         {/* 4 Stat Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <StatCard title="Saldo Tersedia"
+          <StatCard title={
+            <div className="flex items-center gap-2">
+              <span>Saldo Tersedia</span>
+              <button onClick={toggleHideBalance} className="text-gray-400 hover:text-gray-600 transition-colors">
+                {hideBalance ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
+          }
             value={isLoading ? '...' : (hideBalance ? 'Rp •••••••' : formatRupiah(data?.balance, prefs))}
             subtitle={data?.monthLabel || "Bulan ini"} subtitleColor="text-[#22c55e]" borderColor="border-l-[#22c55e]" />
           <StatCard title="Pemasukan Bulan ini"
@@ -189,7 +204,12 @@ export default function DashboardPage() {
         {/* 4 stat cards 2x2 */}
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-white rounded-xl border border-gray-100 border-l-4 border-l-[#22c55e] p-3.5 shadow-sm">
-            <p className="text-xs text-gray-400 mb-1">Saldo Tersedia</p>
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-xs text-gray-400">Saldo Tersedia</p>
+              <button onClick={toggleHideBalance} className="text-gray-400 hover:text-gray-600">
+                {hideBalance ? <EyeOff size={14} /> : <Eye size={14} />}
+              </button>
+            </div>
             <p className="text-base font-black text-gray-900 leading-tight">{isLoading ? '...' : (hideBalance ? 'Rp •••••••' : formatRupiah(data?.balance, prefs))}</p>
             <p className="text-[10px] text-[#22c55e] font-semibold mt-1">{data?.monthLabel || "Bulan ini"}</p>
           </div>
