@@ -14,7 +14,6 @@ import {
   AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer
 } from 'recharts'
-import { useUserSetup } from '../../hooks/useUserSetup'
 import { BudgetSetupCard, IncomePredictorSetupCard } from '../../components/dashboard/SetupPromptCard'
 
 const DUMMY_WEEKLY = [
@@ -37,7 +36,6 @@ const AI_SUGGESTIONS = [
 export default function DashboardPage() {
   const { user } = useAuthContext()
   const { data, isLoading } = useDashboard()
-  const { hasBudget, hasIncome } = useUserSetup()
   
   const { data: profile } = useGetProfile(user?.id)
   const prefs = profile?.preferences || {}
@@ -103,11 +101,11 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5">
           <TransactionTable transactions={data?.recentTransactions ?? []} isLoading={isLoading} prefs={prefs} />
           <div className="space-y-4">
-            {hasBudget
+            {data?.hasBudgetPlanner
               ? <BudgetDonutChart data={data?.budgetByCategory ?? []} total={data?.expense ?? 0} prefs={prefs} />
               : <BudgetSetupCard />
             }
-            {hasIncome ? (
+            {data?.hasIncomePredictor ? (
               <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
                 <p className="text-[10px] font-bold text-[#22c55e] tracking-widest uppercase mb-1">Prediksi Income Minggu Ini</p>
                 <p className="text-2xl font-black text-gray-900">{formatRupiah(data?.incomePrediction ?? 0, prefs)}</p>
@@ -270,13 +268,13 @@ export default function DashboardPage() {
         </div>
 
         {/* Donut chart */}
-        {hasBudget
+        {data?.hasBudgetPlanner
           ? <BudgetDonutChart data={data?.budgetByCategory ?? []} total={data?.expense ?? 0} prefs={prefs} />
           : <BudgetSetupCard />
         }
 
         {/* Prediksi income */}
-        {hasIncome ? (
+        {data?.hasIncomePredictor ? (
           <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
             <p className="text-[10px] font-bold text-[#22c55e] tracking-widest uppercase mb-1">
               Prediksi Income Minggu Ini
