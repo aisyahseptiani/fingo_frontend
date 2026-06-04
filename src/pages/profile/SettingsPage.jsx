@@ -196,7 +196,7 @@ function AkunSettings({ onBack }) {
           await authClient.updateUser({ image: pendingPhoto });
         }
         alert('Profil berhasil disimpan!')
-        window.location.reload()
+        window.location.href = '/settings?tab=akun'
       }
     })
   }
