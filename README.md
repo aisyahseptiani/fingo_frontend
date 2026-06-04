@@ -168,7 +168,7 @@ Aplikasi akan berjalan di:
 
 ---
 
-## 🗄️ Skema Database
+## Skema Database
 
 Proyek menggunakan **PostgreSQL** dengan Prisma ORM. Model utama:
 
