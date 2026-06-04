@@ -16,7 +16,7 @@ export function useLogin() {
     try {
       const { error: err } = await signIn.email({ email, password })
       if (err) throw err
-      navigate('/settings?tab=akun')
+      navigate('/')
     } catch (err) {
       setIsError(true)
       setError(err)
