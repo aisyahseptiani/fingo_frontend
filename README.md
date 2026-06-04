@@ -199,14 +199,3 @@ Fingo menggunakan [better-auth](https://www.better-auth.com/) untuk sistem auten
 
 ---
 
-## 👤 Pengembang
-
-| Nama | GitHub |
-|---|---|
-| Aisyah Septiani | [@aisyahseptiani](https://github.com/aisyahseptiani) |
-
----
-
-## 📄 Lisensi
-
-Proyek ini bersifat **private** dan dikembangkan untuk keperluan pribadi/portofolio.
