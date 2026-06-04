@@ -1,6 +1,6 @@
 # Fingo — Aplikasi Manajemen Keuangan Pribadi
 
-Fingo adalah platform keuangan berbasis AI yang dirancang untuk membantu gig worker, freelancer, pekerja informal, dan Generasi Z mengelola pendapatan yang tid…Fingo adalah platform keuangan berbasis AI yang dirancang untuk membantu gig worker, freelancer, pekerja informal, dan Generasi Z mengelola pendapatan yang tidak menentu. Platform ini menghadirkan Income Predictor berbasis machine learning untuk memprediksi pendapatan mingguan, Impulsive Transaction Detector untuk mengidentifikasi pola pengeluaran berisiko, Fingo AI Assistant berbasis Gemini API, dan Budget Planner adaptif.
+Fingo adalah platform keuangan berbasis AI yang dirancang untuk membantu gig worker, freelancer, pekerja informal, dan Generasi Z mengelola pendapatan yang tidak menentu. Platform ini menghadirkan Income Predictor berbasis machine learning untuk memprediksi pendapatan mingguan, Impulsive Transaction Detector untuk mengidentifikasi pola pengeluaran berisiko, Fingo AI Assistant berbasis Gemini API, dan Budget Planner adaptif.
 
 ---
 
