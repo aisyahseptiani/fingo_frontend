@@ -1,10 +1,10 @@
-# 💰 Fingo — Aplikasi Manajemen Keuangan Pribadi
+# Fingo — Aplikasi Manajemen Keuangan Pribadi
 
 Fingo adalah aplikasi web manajemen keuangan pribadi berbasis AI yang membantu pengguna mencatat transaksi, merencanakan anggaran, serta mendapatkan wawasan keuangan cerdas melalui fitur AI seperti deteksi pengeluaran impulsif dan prediksi pendapatan.
 
 ---
 
-## 🚀 Fitur Utama
+## Fitur Utama
 
 - **Dashboard** — Ringkasan keuangan real-time: total pemasukan, pengeluaran, saldo, serta grafik mingguan/bulanan.
 - **Manajemen Transaksi** — Catat dan lihat riwayat transaksi pemasukan & pengeluaran dengan kategori.
@@ -18,7 +18,7 @@ Fingo adalah aplikasi web manajemen keuangan pribadi berbasis AI yang membantu p
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 | Teknologi | Keterangan |
@@ -47,7 +47,7 @@ Fingo adalah aplikasi web manajemen keuangan pribadi berbasis AI yang membantu p
 
 ---
 
-## 📁 Struktur Proyek
+## Struktur Proyek
 
 ```
 fingo_frontend/
@@ -93,7 +93,7 @@ fingo_frontend/
 
 ---
 
-## ⚙️ Instalasi & Menjalankan Proyek
+## Instalasi & Menjalankan Proyek
 
 ### Prasyarat
 
@@ -154,7 +154,7 @@ Aplikasi akan berjalan di:
 
 ---
 
-## 📜 Scripts yang Tersedia
+## Scripts yang Tersedia
 
 | Script | Perintah | Keterangan |
 |---|---|---|
@@ -178,7 +178,7 @@ Proyek menggunakan **PostgreSQL** dengan Prisma ORM. Model utama:
 
 ---
 
-## 🌐 Deploy ke Vercel
+## Deploy ke Vercel
 
 Proyek ini sudah dikonfigurasi untuk deploy ke Vercel melalui `vercel.json`. Semua request ke `/api/*` akan diteruskan ke `api/index.js` sebagai serverless function.
 
@@ -189,7 +189,7 @@ Proyek ini sudah dikonfigurasi untuk deploy ke Vercel melalui `vercel.json`. Sem
 
 ---
 
-## 🔐 Autentikasi
+## Autentikasi
 
 Fingo menggunakan [better-auth](https://www.better-auth.com/) untuk sistem autentikasi berbasis session/cookie. Fitur yang didukung:
 - Register akun baru
